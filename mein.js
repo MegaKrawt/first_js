@@ -1,40 +1,22 @@
+// =========================================================================
+// 1. ПОЛУЧЕНИЕ ЭЛЕМЕНТОВ DOM
+// =========================================================================
+
 const inputField = document.querySelector('#commentField');
 const button = document.querySelector('#submitButton');
 const result = document.querySelector('#result');
-
-function processText() {
-inputField
-    // 2. Получаем весь текст как одну строку
-    const fullText = inputField.value.replace(/,/g, '.');
-    // 3. Используем метод split() для разделения строки на массив
-    const linesArray = fullText.split(/\r?\n/);
-    // Дополнительный шаг: Удаление пустых строк (см. ниже)
-    const filteredArray = linesArray.filter(line => line.trim() !== '');
-    return filteredArray
-}
-
-let scope = {};
-button.addEventListener('click', function(){
-    scope = {}
-    for (const s of processText()) {
-        math.evaluate(s, scope); 
-    }
-    console.log(scope)
-    result.innerHTML = ''
-    for (const key in scope){
-        result.innerHTML = result.innerHTML + (key + ' = ' + scope[key]) + '<br>'
-    }
-})
-
-
-
-// Получение элементов DOM
-const keyButtons = document.querySelectorAll('.key-btn'); // Все кнопки с классом key-btn
+const keyButtons = document.querySelectorAll('.key-btn'); // Все символьные кнопки
 const backspaceButton = document.querySelector('#backspaceKey');
-// const enterButton = document.querySelector('#enterKey'); <-- Эта кнопка теперь обрабатывается через .key-btn
+const enterButton = document.querySelector('#enterKey');
 
-// Функция для вставки текста в позицию курсора (очень важна для удобства)
-// ... (оставить без изменений)
+// СТАРТОВАЯ НАСТРОЙКА: Сразу делаем поле ReadOnly, чтобы при первом тапе 
+// клавиатура телефона не появлялась. Мы вернем его в false позже.
+inputField.readOnly = true; 
+
+
+// =========================================================================
+// 2. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+// =========================================================================
 
 function insertAtCursor(field, text) {
     const start = field.selectionStart;
@@ -44,26 +26,10 @@ function insertAtCursor(field, text) {
     field.value = value.substring(0, start) + text + value.substring(end);
 
     field.selectionStart = field.selectionEnd = start + text.length;
-    field.focus(); 
+    // ФОКУС всегда возвращается в основном обработчике
 }
 
-
-// ----------------------------------------------------
-// 1. ЛОГИКА ВИРТУАЛЬНОЙ КЛАВИАТУРЫ
-// ----------------------------------------------------
-
-// Обработчики для всех символьных кнопок (цифры, операторы, переменные)
-keyButtons.forEach(button => {
-    button.addEventListener('click', function() {
-        const keyChar = button.getAttribute('data-key');
-        if (keyChar) {
-            insertAtCursor(inputField, keyChar);
-        }
-    });
-});
-
-// Обработчик для кнопки "УДАЛИТЬ"
-backspaceButton.addEventListener('click', function() {
+function handleBackspace() {
     const start = inputField.selectionStart;
     const end = inputField.selectionEnd;
     const value = inputField.value;
@@ -77,5 +43,98 @@ backspaceButton.addEventListener('click', function() {
             inputField.selectionStart = inputField.selectionEnd = start;
         }
     }
+}
+
+// =========================================================================
+// 3. ЕДИНЫЙ ОБРАБОТЧИК КЛАВИАТУРЫ (Адаптация под мобильные)
+// =========================================================================
+
+function handleVirtualKey(e) {
+    // 1. Предотвращаем стандартное действие браузера (главное для мобильных!)
+    e.preventDefault(); 
+    
+    // 2. ЛОГИКА СКРЫТИЯ КЛАВИАТУРЫ
+    // Временно ставим readOnly, чтобы при blur/focus клавиатура телефона скрылась.
+    inputField.readOnly = true;
+    inputField.blur();
+    inputField.focus(); 
+    
+    // 3. ВСТАВКА СИМВОЛА
+    const button = e.currentTarget;
+    const keyChar = button.getAttribute('data-key');
+
+    if (keyChar) {
+        // Проверяем, это символ новой строки или обычный символ
+        const charToInsert = keyChar === '\\n' ? '\n' : keyChar;
+        insertAtCursor(inputField, charToInsert);
+
+    } else if (button.id === 'backspaceKey') {
+        // УДАЛЕНИЕ
+        handleBackspace();
+    }
+    
+    // 4. ВОЗВРАЩАЕМ ВОЗМОЖНОСТЬ ввода с внешней клавиатуры (если вы не хотите,
+    // чтобы пользователь мог использовать нативную клавиатуру, удалите эту строку)
+    inputField.readOnly = false; 
+    
+    // На всякий случай возвращаем фокус (хотя он уже был возвращен выше)
     inputField.focus();
+}
+
+
+// =========================================================================
+// 4. НАЗНАЧЕНИЕ ОБРАБОТЧИКОВ
+// =========================================================================
+
+// Все символьные кнопки
+keyButtons.forEach(button => {
+    // touchstart для быстрого отклика на мобильных, click для ПК
+    button.addEventListener('touchstart', handleVirtualKey);
+    button.addEventListener('click', handleVirtualKey);
+});
+
+// Кнопка УДАЛИТЬ
+backspaceButton.addEventListener('touchstart', handleVirtualKey);
+backspaceButton.addEventListener('click', handleVirtualKey);
+
+// Кнопка ВВОД (новая строка)
+enterButton.addEventListener('touchstart', handleVirtualKey);
+enterButton.addEventListener('click', handleVirtualKey);
+
+
+// =========================================================================
+// 5. ЛОГИКА MATH.JS (Оставлена без изменений)
+// =========================================================================
+
+function processText() {
+    // 2. Получаем весь текст как одну строку
+    const fullText = inputField.value.replace(/,/g, '.');
+    // 3. Используем метод split() для разделения строки на массив
+    const linesArray = fullText.split(/\r?\n/);
+    // Дополнительный шаг: Удаление пустых строк (см. ниже)
+    const filteredArray = linesArray.filter(line => line.trim() !== '');
+    return filteredArray
+}
+
+let scope = {};
+button.addEventListener('click', function(){
+    scope = {}
+    result.innerHTML = 'Результат: <br>'; // Очищаем и ставим заголовок
+    
+    try {
+        for (const s of processText()) {
+            math.evaluate(s, scope); 
+        }
+        
+        for (const key in scope){
+            if (Object.hasOwn(scope, key)) {
+                 result.innerHTML += `<b>${key}</b> = ${scope[key]}<br>`;
+            }
+        }
+        
+    } catch (e) {
+        // Ловим и отображаем ошибки вычисления
+        result.innerHTML = `<span style="color: red;">Ошибка: ${e.message}</span>`;
+        console.error("Math.js Error:", e);
+    }
 });
