@@ -81,7 +81,7 @@ function handleVirtualKey(e) {
 
     // 4. ВОЗВРАЩАЕМ ВОЗМОЖНОСТЬ ввода с внешней клавиатуры (если вы не хотите,
     // чтобы пользователь мог использовать нативную клавиатуру, удалите эту строку)
-    // inputField.readOnly = false; 
+    inputField.readOnly = false; 
     
     
 }
