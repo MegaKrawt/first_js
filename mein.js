@@ -13,6 +13,9 @@ const enterButton = document.querySelector('#enterKey');
 // клавиатура телефона не появлялась. Мы вернем его в false позже.
 inputField.readOnly = true; 
 
+document.querySelector('#hide_klaviatyr').addEventListener('click', function(){
+    inputField.readOnly = ! inputField.readOnly
+})
 
 // =========================================================================
 // 2. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
@@ -22,7 +25,7 @@ function insertAtCursor(field, text) {
     const start = field.selectionStart;
     const end = field.selectionEnd;
     const value = field.value;
-
+    inputField.style.caret_color='black'
     field.value = value.substring(0, start) + text + value.substring(end);
 
     field.selectionStart = field.selectionEnd = start + text.length;
