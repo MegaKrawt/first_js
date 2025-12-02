@@ -5,7 +5,7 @@
 const inputField = document.querySelector('#commentField');
 const button = document.querySelector('#submitButton');
 const result = document.querySelector('#result');
-const keyButtons = document.querySelectorAll('.key-btn'); // Все символьные кнопки
+let keyButtons = document.querySelectorAll('.key-btn'); // Все символьные кнопки
 const backspaceButton = document.querySelector('#backspaceKey');
 const enterButton = document.querySelector('#enterKey');
 
@@ -113,7 +113,7 @@ enterButton.addEventListener('click', handleVirtualKey);
 
 function processText() {
     // 2. Получаем весь текст как одну строку
-    const fullText = inputField.value.replace(/,/g, '.');
+    const fullText = inputField.value
     // 3. Используем метод split() для разделения строки на массив
     const linesArray = fullText.split(/\r?\n/);
     // Дополнительный шаг: Удаление пустых строк (см. ниже)
@@ -121,7 +121,9 @@ function processText() {
     return filteredArray
 }
 
+let newButton = document.createElement('button')
 let scope = {};
+const targetDiv = document.getElementById('velues_names')
 button.addEventListener('click', function(){
     scope = {}
     result.innerHTML = 'Результат: <br>'; // Очищаем и ставим заголовок
@@ -130,10 +132,23 @@ button.addEventListener('click', function(){
         for (const s of processText()) {
             math.evaluate(s, scope); 
         }
-        
+        targetDiv.innerHTML = ''
         for (const key in scope){
             if (Object.hasOwn(scope, key)) {
                  result.innerHTML += `<b>${key}</b> = ${scope[key]}<br>`;
+                 newButton = document.createElement('button')
+                 newButton.className = 'key-btn'
+                 newButton.setAttribute('data-key', key)
+                 newButton.textContent = key
+                 newButton.style.width = '50px'
+                 newButton.style.backgroundColor = '#00bfffff'
+                 keyButtons = document.querySelectorAll('.key-btn')
+                 targetDiv.appendChild(newButton)
+
+                // touchstart для быстрого отклика на мобильных, click для ПК
+                newButton.addEventListener('touchstart', handleVirtualKey);
+                newButton.addEventListener('click', handleVirtualKey);
+                
             }
         }
         
