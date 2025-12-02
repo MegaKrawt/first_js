@@ -14,7 +14,7 @@ const enterButton = document.querySelector('#enterKey');
 inputField.readOnly = true; 
 
 document.querySelector('#hide_klaviatyr').addEventListener('click', function(){
-    inputField.readOnly = ! inputField.readOnly
+    inputField.readOnly = false
 })
 
 // =========================================================================
@@ -81,7 +81,7 @@ function handleVirtualKey(e) {
 
     // 4. ВОЗВРАЩАЕМ ВОЗМОЖНОСТЬ ввода с внешней клавиатуры (если вы не хотите,
     // чтобы пользователь мог использовать нативную клавиатуру, удалите эту строку)
-    inputField.readOnly = false; 
+    // inputField.readOnly = false; 
     
     
 }
