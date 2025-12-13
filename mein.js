@@ -19,7 +19,7 @@ let saves = JSON.parse(localStorage.getItem('saves'));
 // Если localStorage.getItem('saves') вернул null,
 // мы инициализируем saves как пустой объект.
 if (saves == null) {
-    saves = {};
+    saves = {}
     localStorage.setItem('saves', JSON.stringify(saves))
 }
 
