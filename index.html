@@ -76,12 +76,19 @@
     </style>
   </head>
   <body>
-    <textarea id="commentField" style="font-size: 30px;" name="comment" rows="5" cols="30"></textarea>
+    <input type="text" id = 'name_input' placeholder="name of save" style="font-size: 30px;">
+    <select id="name_select" style="font-size: 30px;">
+        <!-- <option value="1">1</option> -->
+    </select>
+    <button id="save_btn" style="font-size: 30px;">save</button>
+    <button id="load_btn" style="font-size: 30px;">load</button>
+    <p></p>
+    <textarea id="commentField" style="font-size: 30px;" name="comment" rows="5" cols="35"></textarea>
     <p></p>
     <button id="hide_klaviatyr" style="font-size: 25px; background-color: #f700ff; width: 400px; height: 30px;">показати клавіатуру</button>
     <p></p>
     <button id="submitButton" style="font-size: 35px; background-color: #00ff00; width: 400px; height: 50px;">порахувати</button>
-    <p id="result" style="font-size: 30px;"></p>
+    <p id="result" style="font-size: 30px; margin: 0;"></p>
     <div id="keyboard">
         <button class="key-btn var-btn" data-key="x">x</button>
         <button class="key-btn var-btn" data-key="y">y</button>

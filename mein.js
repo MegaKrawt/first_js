@@ -8,6 +8,46 @@ const result = document.querySelector('#result');
 let keyButtons = document.querySelectorAll('.key-btn'); // Все символьные кнопки
 const backspaceButton = document.querySelector('#backspaceKey');
 const enterButton = document.querySelector('#enterKey');
+const saveButton = document.querySelector('#save_btn');
+const load_btn = document.querySelector('#load_btn');
+const name_input = document.querySelector('#name_input');
+const name_select = document.querySelector('#name_select');
+
+
+let saves = {}
+saves = JSON.parse(localStorage.getItem('saves'))
+name_select.innerHTML = ''
+Object.keys(saves).forEach((i) => {
+    console.log(i)
+    name_select.innerHTML += `\n<option value="${i}">${i}</option>`
+
+})
+
+
+saveButton.addEventListener('click', function(){
+    saves = JSON.parse(localStorage.getItem('saves'))
+    saves[name_input.value] = inputField.value
+    localStorage.setItem('saves', JSON.stringify(saves))
+
+    name_select.innerHTML = ''
+    Object.keys(saves).forEach((i) => {
+        console.log(i)
+        name_select.innerHTML += `\n<option value="${i}">${i}</option>`
+    })
+})
+
+load_btn.addEventListener('click', function(){
+    saves = JSON.parse(localStorage.getItem('saves'))
+    inputField.value = saves[name_input.value]
+})
+
+name_select.addEventListener('change', function(){
+    name_input.value = name_select.value
+
+    saves = JSON.parse(localStorage.getItem('saves'))
+    inputField.value = saves[name_input.value]
+})
+
 
 // СТАРТОВАЯ НАСТРОЙКА: Сразу делаем поле ReadOnly, чтобы при первом тапе 
 // клавиатура телефона не появлялась. Мы вернем его в false позже.
