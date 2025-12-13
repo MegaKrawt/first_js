@@ -15,7 +15,6 @@ const name_select = document.querySelector('#name_select');
 
 
 let saves = JSON.parse(localStorage.getItem('saves'));
-
 // Если localStorage.getItem('saves') вернул null,
 // мы инициализируем saves как пустой объект.
 if (saves == null) {
