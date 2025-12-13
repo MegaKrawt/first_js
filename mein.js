@@ -18,9 +18,12 @@ let saves = JSON.parse(localStorage.getItem('saves'));
 
 // Если localStorage.getItem('saves') вернул null,
 // мы инициализируем saves как пустой объект.
-if (!saves) {
+if (saves == null) {
     saves = {};
+    localStorage.setItem('saves', JSON.stringify(saves))
 }
+
+console.log(saves)
 
 name_select.innerHTML = ''
 Object.keys(saves).forEach((i) => {
