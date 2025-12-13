@@ -10,6 +10,7 @@ const backspaceButton = document.querySelector('#backspaceKey');
 const enterButton = document.querySelector('#enterKey');
 const saveButton = document.querySelector('#save_btn');
 const load_btn = document.querySelector('#load_btn');
+const del_btn = document.querySelector('#del_btn');
 const name_input = document.querySelector('#name_input');
 const name_select = document.querySelector('#name_select');
 
@@ -22,9 +23,7 @@ if (saves == null) {
     localStorage.setItem('saves', JSON.stringify(saves))
 }
 
-console.log(saves)
-
-name_select.innerHTML = ''
+name_select.innerHTML = '\n<option value=" "> </option>'
 Object.keys(saves).forEach((i) => {
     console.log(i)
     name_select.innerHTML += `\n<option value="${i}">${i}</option>`
@@ -37,7 +36,7 @@ saveButton.addEventListener('click', function(){
     saves[name_input.value] = inputField.value
     localStorage.setItem('saves', JSON.stringify(saves))
 
-    name_select.innerHTML = ''
+    name_select.innerHTML = '\n<option value=" "> </option>'
     Object.keys(saves).forEach((i) => {
         console.log(i)
         name_select.innerHTML += `\n<option value="${i}">${i}</option>`
@@ -54,6 +53,21 @@ name_select.addEventListener('change', function(){
 
     saves = JSON.parse(localStorage.getItem('saves'))
     inputField.value = saves[name_input.value]
+})
+
+del_btn.addEventListener('click', function(){
+    if (confirm('вы точно хотите удалить сохранение ' + name_input.value + ' ?')){
+        saves = JSON.parse(localStorage.getItem('saves'))
+        delete saves[name_input.value]
+        localStorage.setItem('saves', JSON.stringify(saves))
+
+        name_select.innerHTML = '\n<option value=" "> </option>'
+        Object.keys(saves).forEach((i) => {
+            console.log(i)
+            name_select.innerHTML += `\n<option value="${i}">${i}</option>`
+        })
+    }
+
 })
 
 
