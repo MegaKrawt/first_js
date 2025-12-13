@@ -14,8 +14,14 @@ const name_input = document.querySelector('#name_input');
 const name_select = document.querySelector('#name_select');
 
 
-let saves = {}
-saves = JSON.parse(localStorage.getItem('saves'))
+let saves = JSON.parse(localStorage.getItem('saves'));
+
+// Если localStorage.getItem('saves') вернул null,
+// мы инициализируем saves как пустой объект.
+if (!saves) {
+    saves = {};
+}
+
 name_select.innerHTML = ''
 Object.keys(saves).forEach((i) => {
     console.log(i)
