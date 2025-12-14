@@ -23,7 +23,7 @@ if (saves == null) {
     localStorage.setItem('saves', JSON.stringify(saves))
 }
 
-name_select.innerHTML = '\n<option value=" "> </option>'
+name_select.innerHTML = '\n<option value=" ">_________</option>'
 Object.keys(saves).forEach((i) => {
     console.log(i)
     name_select.innerHTML += `\n<option value="${i}">${i}</option>`
@@ -36,7 +36,7 @@ saveButton.addEventListener('click', function(){
     saves[name_input.value] = inputField.value
     localStorage.setItem('saves', JSON.stringify(saves))
 
-    name_select.innerHTML = '\n<option value=" "> </option>'
+    name_select.innerHTML = '\n<option value=" ">_________</option>'
     Object.keys(saves).forEach((i) => {
         console.log(i)
         name_select.innerHTML += `\n<option value="${i}">${i}</option>`
@@ -53,6 +53,8 @@ name_select.addEventListener('change', function(){
 
     saves = JSON.parse(localStorage.getItem('saves'))
     inputField.value = saves[name_input.value]
+
+    calculate(true)
 })
 
 del_btn.addEventListener('click', function(){
@@ -92,6 +94,8 @@ function insertAtCursor(field, text) {
 
     field.selectionStart = field.selectionEnd = start + text.length;
     // ФОКУС всегда возвращается в основном обработчике
+
+    calculate()
 }
 
 function handleBackspace() {
@@ -108,6 +112,8 @@ function handleBackspace() {
             inputField.selectionStart = inputField.selectionEnd = start;
         }
     }
+
+    calculate()
 }
 
 // =========================================================================
@@ -144,6 +150,8 @@ function handleVirtualKey(e) {
     // 4. ВОЗВРАЩАЕМ ВОЗМОЖНОСТЬ ввода с внешней клавиатуры (если вы не хотите,
     // чтобы пользователь мог использовать нативную клавиатуру, удалите эту строку)
     // inputField.readOnly = false; 
+
+    calculate()
     
     
 }
@@ -183,11 +191,9 @@ function processText() {
     return filteredArray
 }
 
-let newButton = document.createElement('button')
-let scope = {};
-const targetDiv = document.getElementById('velues_names')
-button.addEventListener('click', function(){
+function calculate(print_error = false){
     scope = {}
+    old_result = result.innerHTML
     result.innerHTML = 'Результат: <br>'; // Очищаем и ставим заголовок
     
     try {
@@ -202,8 +208,12 @@ button.addEventListener('click', function(){
                  newButton.className = 'key-btn'
                  newButton.setAttribute('data-key', key)
                  newButton.textContent = key
-                 newButton.style.width = '50px'
+                 newButton.style.paddingInline = '10px'
+                 newButton.style.marginInline = '10px'
+                 newButton.style.minWidth = '50px'
                  newButton.style.backgroundColor = '#00bfffff'
+                 
+                 newButton.style.fontSize = '25px'
                  keyButtons = document.querySelectorAll('.key-btn')
                  targetDiv.appendChild(newButton)
 
@@ -215,8 +225,19 @@ button.addEventListener('click', function(){
         }
         
     } catch (e) {
+        if (print_error){
         // Ловим и отображаем ошибки вычисления
         result.innerHTML = `<span style="color: red;">Ошибка: ${e.message}</span>`;
         console.error("Math.js Error:", e);
+        }
+        else{result.innerHTML = old_result}
     }
-});
+}
+
+let newButton = document.createElement('button')
+let scope = {};
+const targetDiv = document.getElementById('velues_names')
+button.addEventListener('click', ()=>{calculate(true)});
+inputField.addEventListener('input', ()=>{calculate(false)});
+
+
