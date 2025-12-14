@@ -198,7 +198,9 @@ function calculate(print_error = false){
     
     try {
         for (const s of processText()) {
-            math.evaluate(s, scope); 
+            try{
+                math.evaluate(s, scope); 
+            }catch{scope[s.split('=')[0]]='error'}
         }
         targetDiv.innerHTML = ''
         for (const key in scope){
