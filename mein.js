@@ -13,6 +13,7 @@ const load_btn = document.querySelector('#load_btn');
 const del_btn = document.querySelector('#del_btn');
 const name_input = document.querySelector('#name_input');
 const name_select = document.querySelector('#name_select');
+const update_cod_app = document.querySelector('#update_cod_app');
 
 
 let saves = JSON.parse(localStorage.getItem('saves'));
@@ -191,16 +192,35 @@ function processText() {
     return filteredArray
 }
 
+let app_arr_in={}
+let app_arr_out={}
+
 function calculate(print_error = false){
     scope = {}
+    app_arr_out={}
     old_result = result.innerHTML
     result.innerHTML = 'Результат: <br>'; // Очищаем и ставим заголовок
     
     try {
+        appForIn = []
         for (const s of processText()) {
-            try{
-                math.evaluate(s, scope); 
-            }catch{scope[s.split('=')[0]]='error'}
+            if (s[0]=="#"){
+                if ("#input" == s.slice(0, 6)){
+                  appForIn.push(s.split(" ")[2])
+                  try{
+                  scope[s.split(" ")[1]]=app_arr_in[s.split(" ")[2]].value
+                  }
+                  catch{scope[s.split(" ")[1]]="error"}
+                }
+                if ("#output" == s.slice(0, 7)){
+                  app_arr_out[s.split(" ")[2]]=scope[s.split(" ")[1]]
+                }
+            }
+            else{
+                try{
+                    math.evaluate(s, scope); 
+                }catch{scope[s.split('=')[0]]='error'}
+            }
         }
         targetDiv.innerHTML = ''
         for (const key in scope){
@@ -242,4 +262,57 @@ const targetDiv = document.getElementById('velues_names')
 button.addEventListener('click', ()=>{calculate(true)});
 inputField.addEventListener('input', ()=>{calculate(false)});
 
+
+
+// cod_app
+const cod_app_in = document.querySelector('#cod_app_in');
+const cod_app_out = document.querySelector('#cod_app_out');
+update_cod_app.addEventListener("click", ()=>{
+  calculate()
+    console.log(app_arr_out)
+    
+    cod_app_in.innerHTML = ''
+    cod_app_out.innerHTML = ''
+    app_arr_in = {}
+    
+    appForIn.forEach((i)=>{
+    // 1. Создаем элементы
+    const text = document.createElement('span');
+    const input = document.createElement('input');
+    // 2. Настраиваем их
+    text.textContent = i + " = "        // Добавляем текст
+    text.style.fontSize = "40px"
+    input.type = 'number';        // Указываем тип инпута
+    input.style.fontSize = "40px"
+    app_arr_in[i]=input
+    // 3. Добавляем на страницу
+    cod_app_in.appendChild(text);
+    cod_app_in.appendChild(input);
+    })
+    
+    calculate()
+    
+    s_out=""
+    for (const key in app_arr_out){
+      s_out += key + " = " + app_arr_out[key] + "<br>"
+    }
+    newElement = document.createElement('p')
+    newElement.innerHTML = s_out
+    newElement.style.fontSize = '40px'
+    cod_app_out.appendChild(newElement)
+})
+
+document.getElementById("cal_cod_app").addEventListener("click", ()=>{
+    cod_app_out.innerHTML=""
+    calculate()
+    
+    s_out=""
+    for (const key in app_arr_out){
+      s_out += key + " = " + app_arr_out[key] + "<br>"
+    }
+    newElement = document.createElement('p')
+    newElement.innerHTML = s_out
+    newElement.style.fontSize = '40px'
+    cod_app_out.appendChild(newElement)
+})
 
