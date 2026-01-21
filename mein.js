@@ -288,6 +288,7 @@ update_cod_app.addEventListener("click", ()=>{
     // 3. Добавляем на страницу
     cod_app_in.appendChild(text);
     cod_app_in.appendChild(input);
+    cod_app_in.appendChild(document.createElement("br"));
     })
     
     calculate()
