@@ -16,6 +16,20 @@ const name_select = document.querySelector('#name_select');
 const update_cod_app = document.querySelector('#update_cod_app');
 
 
+// Настройка math.js для поддержки любых алфавитов (включая кириллицу)
+math.config({
+  predictable: false,
+  epsilon: 1e-12
+});
+
+// Переопределяем правила парсера, чтобы он принимал русские буквы
+const isAlphaOriginal = math.parse.isAlpha;
+math.parse.isAlpha = function (c, cNext, text) {
+  return isAlphaOriginal(c, cNext, text) || (c >= '\u0400' && c <= '\u04FF'); 
+  // Диапазон \u0400-\u04FF — это кириллица
+};
+
+
 let saves = JSON.parse(localStorage.getItem('saves'));
 // Если localStorage.getItem('saves') вернул null,
 // мы инициализируем saves как пустой объект.
