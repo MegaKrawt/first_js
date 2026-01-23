@@ -24,6 +24,12 @@ if (saves == null) {
     localStorage.setItem('saves', JSON.stringify(saves))
 }
 
+let setting = JSON.parse(localStorage.getItem('setting'));
+if (setting == null) {
+    setting = {}
+    localStorage.setItem('setting', JSON.stringify(setting))
+}
+
 name_select.innerHTML = '\n<option value=" ">_________</option>'
 Object.keys(saves).forEach((i) => {
     console.log(i)
@@ -110,6 +116,42 @@ document.querySelector('#hideKaybord').addEventListener('change', function() {
         keyboard_.style.display = 'none';
         velues_names_.style.display = "none"
 }});
+
+// Функция для сохранения
+function saveInterfaceSettings() {
+    const settings = {
+        hideResult: document.querySelector('#hideResult').checked,
+        hideInput: document.querySelector('#hideInput').checked,
+        hideKaybord: document.querySelector('#hideKaybord').checked
+    };
+    localStorage.setItem('interfaceSettings', JSON.stringify(settings));
+}
+
+// Функция для загрузки
+function loadInterfaceSettings() {
+    const saved = JSON.parse(localStorage.getItem('interfaceSettings'));
+    if (saved) {
+        const ids = ['hideResult', 'hideInput', 'hideKaybord'];
+        
+        ids.forEach(id => {
+            const chk = document.querySelector(`#${id}`);
+            if (chk && saved[id] !== undefined) {
+                chk.checked = saved[id];
+                // ВОТ ЗДЕСЬ МАГИЯ: заставляем чекбокс "сработать"
+                chk.dispatchEvent(new Event('change'));
+            }
+        });
+    }
+}
+
+// Добавляем сохранение к существующим чекбоксам
+document.querySelectorAll('input[type="checkbox"]').forEach(chk => {
+    chk.addEventListener('change', saveInterfaceSettings);
+});
+
+// Запускаем при загрузке страницы
+loadInterfaceSettings();
+
 
 
 
