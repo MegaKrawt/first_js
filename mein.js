@@ -259,7 +259,7 @@ function calculate(print_error = false){
             }
             else{
                 try{
-                    math.evaluate(s, scope); 
+                    scope[s.split("=")[0]] = math.evaluate(s.split("=")[1], scope); 
                 }catch{scope[s.split('=')[0]]='error'}
             }
         }
