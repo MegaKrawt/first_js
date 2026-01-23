@@ -56,6 +56,7 @@ name_select.addEventListener('change', function(){
     inputField.value = saves[name_input.value]
 
     calculate(true)
+    update_cod_app.click()
 })
 
 del_btn.addEventListener('click', function(){
@@ -72,6 +73,46 @@ del_btn.addEventListener('click', function(){
     }
 
 })
+
+
+// обработка чекбоксов
+document.querySelector('#hideResult').addEventListener('change', function() {
+    if (!this.checked) {
+        result.style.display = 'block';
+    } else {
+        result.style.display = 'none';
+}});
+document.querySelector('#hideInput').addEventListener('change', function() {
+    const keyboard_=document.getElementById("keyboard")
+    const velues_names_=document.getElementById("velues_names")
+    if (!this.checked) {
+        inputField.style.display = 'block';
+        button.style.display = 'block';
+        document.getElementById("hide_klaviatyr").style.display = 'block';
+        keyboard_.style.display = 'grid';
+        velues_names_.style.display = "block"
+        document.querySelector('#hideKaybord').checked=0
+    } else {
+        inputField.style.display = 'none';
+        button.style.display = 'none';
+        document.getElementById("hide_klaviatyr").style.display = 'none';
+        keyboard_.style.display = 'none';
+        velues_names_.style.display = "none"
+        document.querySelector('#hideKaybord').checked=1
+}});
+document.querySelector('#hideKaybord').addEventListener('change', function() {
+    const keyboard_=document.getElementById("keyboard")
+    const velues_names_=document.getElementById("velues_names")
+    if (!this.checked) {
+        keyboard_.style.display = 'grid';
+        velues_names_.style.display = "block"
+    } else {
+        keyboard_.style.display = 'none';
+        velues_names_.style.display = "none"
+}});
+
+
+
 
 
 // СТАРТОВАЯ НАСТРОЙКА: Сразу делаем поле ReadOnly, чтобы при первом тапе 
@@ -205,10 +246,10 @@ function calculate(print_error = false){
         appForIn = []
         for (const s of processText()) {
             if (s[0]=="#"){
-                if ("#input" == s.slice(0, 6)){
+              if ("#input" == s.slice(0, 6)){
                   appForIn.push(s.split(" ")[2])
                   try{
-                  scope[s.split(" ")[1]]=app_arr_in[s.split(" ")[2]].value
+                  scope[s.split(" ")[1]]=math.evaluate(app_arr_in[s.split(" ")[2]].value)
                   }
                   catch{scope[s.split(" ")[1]]="error"}
                 }
@@ -267,6 +308,7 @@ inputField.addEventListener('input', ()=>{calculate(false)});
 // cod_app
 const cod_app_in = document.querySelector('#cod_app_in');
 const cod_app_out = document.querySelector('#cod_app_out');
+cal_cod_app = document.getElementById("cal_cod_app")
 update_cod_app.addEventListener("click", ()=>{
   calculate()
     console.log(app_arr_out)
@@ -282,8 +324,10 @@ update_cod_app.addEventListener("click", ()=>{
     // 2. Настраиваем их
     text.textContent = i + " = "        // Добавляем текст
     text.style.fontSize = "40px"
-    input.type = 'number';        // Указываем тип инпута
+    input.type = 'tel';        // Указываем тип инпута
     input.style.fontSize = "40px"
+    input.style.width = "200px"
+    input.addEventListener("input", (e)=>{cal_cod_app.click()})
     app_arr_in[i]=input
     // 3. Добавляем на страницу
     cod_app_in.appendChild(text);
@@ -303,7 +347,7 @@ update_cod_app.addEventListener("click", ()=>{
     cod_app_out.appendChild(newElement)
 })
 
-document.getElementById("cal_cod_app").addEventListener("click", ()=>{
+cal_cod_app.addEventListener("click", ()=>{
     cod_app_out.innerHTML=""
     calculate()
     
