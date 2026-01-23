@@ -111,10 +111,8 @@ document.querySelector('#hideKaybord').addEventListener('change', function() {
     const velues_names_=document.getElementById("velues_names")
     if (!this.checked) {
         keyboard_.style.display = 'grid';
-        velues_names_.style.display = "block"
     } else {
         keyboard_.style.display = 'none';
-        velues_names_.style.display = "none"
 }});
 
 // Функция для сохранения
