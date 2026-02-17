@@ -18,7 +18,16 @@ const ghost = document.getElementById('ghost');
 
 inputField.addEventListener('scroll', () => {
     ghost.scrollTop = inputField.scrollTop;
+    ghost.scrollLeft = inputField.scrollLeft;
 });
+// Создаем специальный наблюдатель за размером
+const resizeObserver = new ResizeObserver(() => {
+    // Подстраиваем высоту "призрачного" слоя под реальную высоту textarea
+    ghost.style.height = inputField.offsetHeight + 'px';
+    ghost.style.width = inputField.offsetWidth + 'px';
+});
+// Запускаем слежку за твоим инпутом
+resizeObserver.observe(inputField);
 
 
 // Настройка math.js для поддержки любых алфавитов (включая кириллицу)
@@ -292,6 +301,11 @@ function processText() {
     // const filteredArray = linesArray.filter(line => line.trim() !== '');
     return linesArray
 }
+function escapeHTML(str) {
+    const p = document.createElement('p');
+    p.textContent = str; // Браузер сам заменит опасные символы на безопасные
+    return p.innerHTML;
+}
 
 let app_arr_in={}
 let app_arr_out={}
@@ -307,6 +321,7 @@ function calculate(print_error = false){
         appForIn = []
         for (const s of processText()) {
             if (s == ''){ghostContent += `<span></span>\n`; continue}
+            let isError = false
             let resultText = '';
             if (s[0]=="#"){
               if ("#input" == s.slice(0, 6)){
@@ -315,19 +330,22 @@ function calculate(print_error = false){
                   scope[s.split(" ")[1]]=math.evaluate(app_arr_in[s.split(" ")[2]].value)
                   resultText = ` = ${scope[s.split(" ")[1]]}`;
                   }
-                  catch{scope[s.split(" ")[1]]="error"}
+                  catch{scope[s.split(" ")[1]]="error"; isError = true}
                 }
                 if ("#output" == s.slice(0, 7)){
                   app_arr_out[s.split(" ")[2]]=scope[s.split(" ")[1]]
+                  resultText = ` = ${scope[s.split(" ")[1]]}`;
                 }
             }
             else{
                 try{
                     scope[s.split("=")[0]] = math.evaluate(s.split("=")[1], scope); 
                     resultText = ` = ${scope[s.split("=")[0]]}`;
-                }catch{scope[s.split('=')[0]]='error'}
+                }catch{scope[s.split('=')[0]]='error'; isError = true}
             };
-            ghostContent += `<span>${s}</span><span class="res">${resultText}</span>\n`
+            if (isError) {
+                ghostContent += `<span>${escapeHTML(s)}</span><span style="color: #ff4d4d; font-weight: bold;"> !! ошибка</span>\n`;}
+            else{ghostContent += `<span>${escapeHTML(s)}</span><span class="res">${escapeHTML(resultText)}</span>\n`;}
         }; ghost.innerHTML = ghostContent;
         targetDiv.innerHTML = ''
         for (const key in scope){

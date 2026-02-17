@@ -24,7 +24,6 @@
     z-index: 2;
     background: transparent; /* Видим сквозь него нижний слой */
     color: black;
-    resize: none;
   }
 
   .overlay {
