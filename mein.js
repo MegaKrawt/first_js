@@ -321,23 +321,17 @@ function calculate(print_error = false){
         for (const key in scope){
             if (Object.hasOwn(scope, key)) {
                  result.innerHTML += `<b>${key}</b> = ${scope[key]}<br>`;
-                 newButton = document.createElement('button')
+                 let newButton = document.createElement('button')
                  newButton.className = 'key-btn'
                  newButton.setAttribute('data-key', key)
                  newButton.textContent = key
-                 newButton.style.paddingInline = '10px'
-                 newButton.style.marginInline = '10px'
-                 newButton.style.minWidth = '50px'
-                 newButton.style.backgroundColor = '#00bfffff'
-                 
-                 newButton.style.fontSize = '25px'
-                 keyButtons = document.querySelectorAll('.key-btn')
+                 newButton.style.cssText = "padding-inline: 10px; margin-inline: 10px; min-width: 50px; background-color: #00bfffff; font-size: 25px;";
+                //  keyButtons = document.querySelectorAll('.key-btn')
                  targetDiv.appendChild(newButton)
 
                 // touchstart для быстрого отклика на мобильных, click для ПК
                 newButton.addEventListener('touchstart', handleVirtualKey);
                 newButton.addEventListener('click', handleVirtualKey);
-                
             }
         }
         
@@ -351,7 +345,6 @@ function calculate(print_error = false){
     }
 }
 
-let newButton = document.createElement('button')
 let scope = {};
 const targetDiv = document.getElementById('velues_names')
 button.addEventListener('click', ()=>{calculate(true)});
