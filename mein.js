@@ -16,6 +16,54 @@ const name_select = document.querySelector('#name_select');
 const update_cod_app = document.querySelector('#update_cod_app');
 const ghost = document.getElementById('ghost');
 
+
+window.addEventListener('load', () => {
+    const params = new URLSearchParams(window.location.search);
+    const codeFromUrl = params.get('code');
+    if (codeFromUrl) {
+        inputField.value = codeFromUrl;
+        // 1. Сначала генерируем интерфейс (App Mode)
+        update_cod_app.click(); 
+        // 2. Проходим по всем параметрам ссылки
+        params.forEach((value, key) => {
+            if (key.startsWith('v_')) {
+                const varName = key.substring(2); // Отрезаем "v_"
+                // Если такой инпут был создан в твоем объекте app_arr_in
+                if (app_arr_in[varName]) {
+                    app_arr_in[varName].value = value;
+                }
+            }
+        });
+        // 3. Пересчитываем всё с новыми значениями
+        calculate(); 
+        cal_cod_app.click(); // Обновляем вывод в приложении
+        
+        document.querySelector('#hideResult').checked=0; document.querySelector('#hideResult').click();
+        if (codeFromUrl.includes("#input")){
+          document.querySelector('#hideInput').checked=0; document.querySelector('#hideInput').click();}
+        else{document.querySelector('#hideInput').checked=1; document.querySelector('#hideInput').click();}
+    }
+});
+
+function generateShareLink() {
+    const code = inputField.value;
+    let shareUrl = window.location.origin + window.location.pathname + "?code=" + encodeURIComponent(code);
+    // Добавляем значения всех инпутов, которые сейчас созданы в App Mode
+    // app_arr_in — это твой объект с инпутами из mein.js
+    for (const name in app_arr_in) {
+        const val = app_arr_in[name].value;
+        if (val) {
+            shareUrl += `&v_${encodeURIComponent(name)}=${encodeURIComponent(val)}`;
+        }
+    }
+    navigator.clipboard.writeText(shareUrl);
+    alert("Ссылка с данными скопирована!");
+}
+document.getElementById("copiURL_btn").addEventListener("click", () => {generateShareLink()})
+
+
+
+
 inputField.addEventListener('scroll', () => {
     ghost.scrollTop = inputField.scrollTop;
     ghost.scrollLeft = inputField.scrollLeft;
