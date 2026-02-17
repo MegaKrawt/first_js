@@ -1,0 +1,45 @@
+  /* Контейнер, где слои лежат друг на друге */
+  .editor {
+    position: relative;
+    width: 500px;
+    font-family: monospace; /* Важно: буквы одинаковой ширины */
+    font-size: 30px;
+  }
+
+  textarea, .overlay {
+    margin: 0;
+    padding: 10px;
+    width: 100%;
+    height: 150px;
+    font-family: inherit;
+    font-size: inherit;
+    border: 2px solid #333;
+    box-sizing: border-box;
+    white-space: pre; /* Запрещаем перенос строк для точности */
+    overflow: auto;
+  }
+
+  textarea {
+    position: relative;
+    z-index: 2;
+    background: transparent; /* Видим сквозь него нижний слой */
+    color: black;
+    resize: none;
+  }
+
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    background: white;
+    color: transparent; /* Прячем текст, оставляем только результат */
+    pointer-events: none; /* Пропускаем клики к textarea */
+    border-color: transparent;
+  }
+
+  /* Цвет для того самого "призрачного" результата */
+  .res {
+    color: #aaa; 
+    font-style: italic;
+  }

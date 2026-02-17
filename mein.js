@@ -14,6 +14,11 @@ const del_btn = document.querySelector('#del_btn');
 const name_input = document.querySelector('#name_input');
 const name_select = document.querySelector('#name_select');
 const update_cod_app = document.querySelector('#update_cod_app');
+const ghost = document.getElementById('ghost');
+
+inputField.addEventListener('scroll', () => {
+    ghost.scrollTop = inputField.scrollTop;
+});
 
 
 // Настройка math.js для поддержки любых алфавитов (включая кириллицу)
@@ -96,6 +101,7 @@ del_btn.addEventListener('click', function(){
 
 
 // обработка чекбоксов
+const textarea_div = document.querySelector('#textarea_div')
 document.querySelector('#hideResult').addEventListener('change', function() {
     if (!this.checked) {
         result.style.display = 'block';
@@ -106,14 +112,14 @@ document.querySelector('#hideInput').addEventListener('change', function() {
     const keyboard_=document.getElementById("keyboard")
     const velues_names_=document.getElementById("velues_names")
     if (!this.checked) {
-        inputField.style.display = 'block';
+        textarea_div.style.display = 'block';
         button.style.display = 'block';
         document.getElementById("hide_klaviatyr").style.display = 'block';
         keyboard_.style.display = 'grid';
         velues_names_.style.display = "block"
         document.querySelector('#hideKaybord').checked=0
     } else {
-        inputField.style.display = 'none';
+        textarea_div.style.display = 'none';
         button.style.display = 'none';
         document.getElementById("hide_klaviatyr").style.display = 'none';
         keyboard_.style.display = 'none';
@@ -283,8 +289,8 @@ function processText() {
     // 3. Используем метод split() для разделения строки на массив
     const linesArray = fullText.split(/\r?\n/);
     // Дополнительный шаг: Удаление пустых строк (см. ниже)
-    const filteredArray = linesArray.filter(line => line.trim() !== '');
-    return filteredArray
+    // const filteredArray = linesArray.filter(line => line.trim() !== '');
+    return linesArray
 }
 
 let app_arr_in={}
@@ -295,15 +301,19 @@ function calculate(print_error = false){
     app_arr_out={}
     old_result = result.innerHTML
     result.innerHTML = 'Результат: <br>'; // Очищаем и ставим заголовок
+    let ghostContent = '';
     
     try {
         appForIn = []
         for (const s of processText()) {
+            if (s == ''){ghostContent += `<span></span>\n`; continue}
+            let resultText = '';
             if (s[0]=="#"){
               if ("#input" == s.slice(0, 6)){
                   appForIn.push(s.split(" ")[2])
                   try{
                   scope[s.split(" ")[1]]=math.evaluate(app_arr_in[s.split(" ")[2]].value)
+                  resultText = ` = ${scope[s.split(" ")[1]]}`;
                   }
                   catch{scope[s.split(" ")[1]]="error"}
                 }
@@ -314,9 +324,11 @@ function calculate(print_error = false){
             else{
                 try{
                     scope[s.split("=")[0]] = math.evaluate(s.split("=")[1], scope); 
+                    resultText = ` = ${scope[s.split("=")[0]]}`;
                 }catch{scope[s.split('=')[0]]='error'}
-            }
-        }
+            };
+            ghostContent += `<span>${s}</span><span class="res">${resultText}</span>\n`
+        }; ghost.innerHTML = ghostContent;
         targetDiv.innerHTML = ''
         for (const key in scope){
             if (Object.hasOwn(scope, key)) {
