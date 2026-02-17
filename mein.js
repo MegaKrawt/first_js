@@ -61,6 +61,37 @@ function generateShareLink() {
 }
 document.getElementById("copiURL_btn").addEventListener("click", () => {generateShareLink()})
 
+// 1. Объявляем переменную в глобальной области
+let templates = {}; 
+async function load_templates() {
+    try {
+        const response = await fetch('templates.json');
+        // 2. Записываем данные в глобальную переменную
+        templates = await response.json(); 
+        
+        // 3. Только ТУТ запускаем код, который зависит от шаблонов
+        render_ready_select();
+        document.getElementById("ready_select").addEventListener('change', function(){
+          inputField.value = templates[document.getElementById("ready_select").value]
+          console.log(name_select.value)
+          calculate()
+          update_cod_app.click()
+        });
+    } catch (e) {
+        console.error("Ошибка загрузки:", e);
+    }
+}
+function render_ready_select() {
+    const select = document.getElementById("ready_select");
+    select.innerHTML = '<option value=" ">_готовые шаблоны_</option>';
+    
+    // Теперь Object.keys сработает, так как templates уже заполнена
+    Object.keys(templates).forEach((i) => {
+        select.innerHTML += `\n<option value="${i}">${i}</option>`;
+})
+    };
+// Запускаем процесс
+load_templates();
 
 
 
@@ -110,7 +141,6 @@ name_select.innerHTML = '\n<option value=" ">_________</option>'
 Object.keys(saves).forEach((i) => {
     console.log(i)
     name_select.innerHTML += `\n<option value="${i}">${i}</option>`
-
 })
 
 
@@ -368,6 +398,7 @@ function calculate(print_error = false){
     try {
         appForIn = []
         for (const s of processText()) {
+            s_no_spase = s.replaceAll(" ", "")
             if (s == ''){ghostContent += `<span></span>\n`; continue}
             let isError = false
             let resultText = '';
@@ -387,9 +418,9 @@ function calculate(print_error = false){
             }
             else{
                 try{
-                    scope[s.split("=")[0]] = math.evaluate(s.split("=")[1], scope); 
+                    scope[s_no_spase.split("=")[0]] = math.evaluate(s_no_spase.split("=")[1], scope); 
                     resultText = ` = ${scope[s.split("=")[0]]}`;
-                }catch{scope[s.split('=')[0]]='error'; isError = true}
+                }catch{scope[s_no_spase.split('=')[0]]='error'; isError = true}
             };
             if (isError) {
                 ghostContent += `<span>${escapeHTML(s)}</span><span style="color: #ff4d4d; font-weight: bold;"> !! ошибка</span>\n`;}
