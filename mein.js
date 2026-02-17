@@ -14,6 +14,20 @@ const del_btn = document.querySelector('#del_btn');
 const name_input = document.querySelector('#name_input');
 const name_select = document.querySelector('#name_select');
 const update_cod_app = document.querySelector('#update_cod_app');
+const ghost = document.getElementById('ghost');
+
+inputField.addEventListener('scroll', () => {
+    ghost.scrollTop = inputField.scrollTop;
+    ghost.scrollLeft = inputField.scrollLeft;
+});
+// Создаем специальный наблюдатель за размером
+const resizeObserver = new ResizeObserver(() => {
+    // Подстраиваем высоту "призрачного" слоя под реальную высоту textarea
+    ghost.style.height = inputField.offsetHeight + 'px';
+    ghost.style.width = inputField.offsetWidth + 'px';
+});
+// Запускаем слежку за твоим инпутом
+resizeObserver.observe(inputField);
 
 
 // Настройка math.js для поддержки любых алфавитов (включая кириллицу)
@@ -96,6 +110,7 @@ del_btn.addEventListener('click', function(){
 
 
 // обработка чекбоксов
+const textarea_div = document.querySelector('#textarea_div')
 document.querySelector('#hideResult').addEventListener('change', function() {
     if (!this.checked) {
         result.style.display = 'block';
@@ -106,14 +121,14 @@ document.querySelector('#hideInput').addEventListener('change', function() {
     const keyboard_=document.getElementById("keyboard")
     const velues_names_=document.getElementById("velues_names")
     if (!this.checked) {
-        inputField.style.display = 'block';
+        textarea_div.style.display = 'block';
         button.style.display = 'block';
         document.getElementById("hide_klaviatyr").style.display = 'block';
         keyboard_.style.display = 'grid';
         velues_names_.style.display = "block"
         document.querySelector('#hideKaybord').checked=0
     } else {
-        inputField.style.display = 'none';
+        textarea_div.style.display = 'none';
         button.style.display = 'none';
         document.getElementById("hide_klaviatyr").style.display = 'none';
         keyboard_.style.display = 'none';
@@ -283,8 +298,13 @@ function processText() {
     // 3. Используем метод split() для разделения строки на массив
     const linesArray = fullText.split(/\r?\n/);
     // Дополнительный шаг: Удаление пустых строк (см. ниже)
-    const filteredArray = linesArray.filter(line => line.trim() !== '');
-    return filteredArray
+    // const filteredArray = linesArray.filter(line => line.trim() !== '');
+    return linesArray
+}
+function escapeHTML(str) {
+    const p = document.createElement('p');
+    p.textContent = str; // Браузер сам заменит опасные символы на безопасные
+    return p.innerHTML;
 }
 
 let app_arr_in={}
@@ -295,49 +315,54 @@ function calculate(print_error = false){
     app_arr_out={}
     old_result = result.innerHTML
     result.innerHTML = 'Результат: <br>'; // Очищаем и ставим заголовок
+    let ghostContent = '';
     
     try {
         appForIn = []
         for (const s of processText()) {
+            if (s == ''){ghostContent += `<span></span>\n`; continue}
+            let isError = false
+            let resultText = '';
             if (s[0]=="#"){
               if ("#input" == s.slice(0, 6)){
                   appForIn.push(s.split(" ")[2])
                   try{
                   scope[s.split(" ")[1]]=math.evaluate(app_arr_in[s.split(" ")[2]].value)
+                  resultText = ` = ${scope[s.split(" ")[1]]}`;
                   }
-                  catch{scope[s.split(" ")[1]]="error"}
+                  catch{scope[s.split(" ")[1]]="error"; isError = true}
                 }
                 if ("#output" == s.slice(0, 7)){
                   app_arr_out[s.split(" ")[2]]=scope[s.split(" ")[1]]
+                  resultText = ` = ${scope[s.split(" ")[1]]}`;
                 }
             }
             else{
                 try{
                     scope[s.split("=")[0]] = math.evaluate(s.split("=")[1], scope); 
-                }catch{scope[s.split('=')[0]]='error'}
-            }
-        }
+                    resultText = ` = ${scope[s.split("=")[0]]}`;
+                }catch{scope[s.split('=')[0]]='error'; isError = true}
+            };
+            if (isError) {
+                ghostContent += `<span>${escapeHTML(s)}</span><span style="color: #ff4d4d; font-weight: bold;"> !! ошибка</span>\n`;}
+            else if(resultText == " = undefined"){ghostContent += `<span>${escapeHTML(s)}</span><span style="color: #ff4d4d"> = undefined</span>\n`;}
+            else{ghostContent += `<span>${escapeHTML(s)}</span><span class="res">${escapeHTML(resultText)}</span>\n`;}
+        }; ghost.innerHTML = ghostContent;
         targetDiv.innerHTML = ''
         for (const key in scope){
             if (Object.hasOwn(scope, key)) {
                  result.innerHTML += `<b>${key}</b> = ${scope[key]}<br>`;
-                 newButton = document.createElement('button')
+                 let newButton = document.createElement('button')
                  newButton.className = 'key-btn'
                  newButton.setAttribute('data-key', key)
                  newButton.textContent = key
-                 newButton.style.paddingInline = '10px'
-                 newButton.style.marginInline = '10px'
-                 newButton.style.minWidth = '50px'
-                 newButton.style.backgroundColor = '#00bfffff'
-                 
-                 newButton.style.fontSize = '25px'
-                 keyButtons = document.querySelectorAll('.key-btn')
+                 newButton.style.cssText = "padding-inline: 10px; margin-inline: 10px; min-width: 50px; background-color: #00bfffff; font-size: 25px;";
+                //  keyButtons = document.querySelectorAll('.key-btn')
                  targetDiv.appendChild(newButton)
 
                 // touchstart для быстрого отклика на мобильных, click для ПК
                 newButton.addEventListener('touchstart', handleVirtualKey);
                 newButton.addEventListener('click', handleVirtualKey);
-                
             }
         }
         
@@ -351,7 +376,6 @@ function calculate(print_error = false){
     }
 }
 
-let newButton = document.createElement('button')
 let scope = {};
 const targetDiv = document.getElementById('velues_names')
 button.addEventListener('click', ()=>{calculate(true)});
