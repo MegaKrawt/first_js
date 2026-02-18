@@ -388,7 +388,14 @@ function escapeHTML(str) {
 let app_arr_in={}
 let app_arr_out={}
 
-function calculate(print_error = false){
+let inxgrafik = 0
+let outygrafik = 0
+
+let grafikstart = -10
+let grafikstop = 10
+let grafikstep = 0.1
+
+function calculate(print_error = false, updeteUI=true){
     scope = {}
     app_arr_out={}
     old_result = result.innerHTML
@@ -415,11 +422,22 @@ function calculate(print_error = false){
                   app_arr_out[s.split(" ")[2]]=scope[s.split(" ")[1]]
                   resultText = ` = ${scope[s.split(" ")[1]]}`;
                 }
+                if (s.startsWith("#inx")){
+                  scope[s.split(" ")[1]]=inxgrafik
+                }
+                if (s.startsWith("#outy")){
+                  outygrafik=scope[s.split(" ")[1]]
+                }
+                if (s.startsWith("#range")){
+                  grafikstart=math.evaluate(s.split(" ")[1], scope)
+                  grafikstop=math.evaluate(s.split(" ")[2], scope)
+                  grafikstep=math.evaluate(s.split(" ")[3], scope)
+                }
             }
             else{
                 try{
                     scope[s_no_spase.split("=")[0]] = math.evaluate(s_no_spase.split("=")[1], scope); 
-                    resultText = ` = ${scope[s.split("=")[0]]}`;
+                    resultText = ` = ${scope[s_no_spase.split("=")[0]]}`;
                 }catch{scope[s_no_spase.split('=')[0]]='error'; isError = true}
             };
             if (isError) {
@@ -427,6 +445,7 @@ function calculate(print_error = false){
             else if(resultText == " = undefined"){ghostContent += `<span>${escapeHTML(s)}</span><span style="color: #ff4d4d"> = undefined</span>\n`;}
             else{ghostContent += `<span>${escapeHTML(s)}</span><span class="res">${escapeHTML(resultText)}</span>\n`;}
         }; ghost.innerHTML = ghostContent;
+        if (updeteUI){
         targetDiv.innerHTML = ''
         for (const key in scope){
             if (Object.hasOwn(scope, key)) {
@@ -443,7 +462,7 @@ function calculate(print_error = false){
                 newButton.addEventListener('touchstart', handleVirtualKey);
                 newButton.addEventListener('click', handleVirtualKey);
             }
-        }
+        }}
         
     } catch (e) {
         if (print_error){
@@ -518,3 +537,86 @@ cal_cod_app.addEventListener("click", ()=>{
     cod_app_out.appendChild(newElement)
 })
 
+
+
+// =====================
+// -------график--------
+let myChart = null
+let x_arr = []
+let y_arr = []
+function create_grafik(){
+x_arr = []
+y_arr = []
+grafikstart = -10
+grafikstop = 10
+grafikstep = 0.1
+calculate()
+for (let x = Number(grafikstart); x < Number(grafikstop); x+=parseFloat(grafikstep)) {
+  inxgrafik = x
+  calculate(false, false)
+  if (math.abs(outygrafik)<10000000) {
+  x_arr.push(x)
+  y_arr.push(outygrafik)}
+}
+console.log(x_arr)
+console.log(y_arr)
+
+if (myChart !== null) {
+    myChart.destroy();
+}
+const ctx = document.getElementById('myChart').getContext('2d');
+
+myChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: x_arr,
+        datasets: [{
+            label: 'Результат формулы',
+            data: y_arr,
+            borderColor: 'rgb(75, 192, 192)',
+            tension: 0, // ВЫКЛЮЧЕНО сглаживание (линия прямая)
+            pointRadius: 3 // Точки как на твоем скрине
+        }]
+    },
+    options: {
+        animation: false, // ВЫКЛЮЧЕНА анимация (график мгновенный)
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+}
+document.getElementById("create_grafik_btn").addEventListener("click", () => {create_grafik()})
+
+
+
+document.getElementById('export_csv_btn').addEventListener('click', () => {
+    // 1. Проверяем, есть ли данные в массивах (они наполняются при создании графика)
+    // Эти массивы должны быть объявлены глобально или доступны в этой функции
+    if (typeof x_arr === 'undefined' || x_arr.length === 0) {
+        alert("Сначала создайте график!");
+        return;
+    }
+
+    // 2. Формируем "шапку" таблицы
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "X (Inx),Y (Outy)\n"; // Заголовки столбцов
+
+    // 3. Наполняем данными из твоих расчетов
+    for (let i = 0; i < x_arr.length; i++) {
+        csvContent += x_arr[i] + "," + y_arr[i] + "\n";
+    }
+
+    // 4. Создаем "виртуальный файл" и скачиваем его
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "my_research_data.csv");
+    document.body.appendChild(link); // Нужно для Firefox
+
+    link.click(); // Имитируем нажатие на ссылку
+    document.body.removeChild(link); // Удаляем временный элемент
+});
