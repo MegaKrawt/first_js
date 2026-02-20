@@ -401,6 +401,7 @@ function calculate(print_error = false, updeteUI=true){
     old_result = result.innerHTML
     result.innerHTML = 'Результат: <br>'; // Очищаем и ставим заголовок
     let ghostContent = '';
+    outygrafik=[]
     
     try {
         appForIn = []
@@ -426,14 +427,15 @@ function calculate(print_error = false, updeteUI=true){
                   scope[s.split(" ")[1]]=inxgrafik
                 }
                 if (s.startsWith("#outy")){
-                  outygrafik=scope[s.split(" ")[1]]
+                  outygrafik.push(scope[s.split(" ")[1]])
+                  if (updeteUI) names_grafik.push(s.split(" ")[2])
                 }
                 if (s.startsWith("#range")){
                   grafikstart=math.evaluate(s.split(" ")[1], scope)
                   grafikstop=math.evaluate(s.split(" ")[2], scope)
                   grafikstep=math.evaluate(s.split(" ")[3], scope)
                 }
-            }
+            } else if(s.startsWith("//")){continue}
             else{
                 try{
                     scope[s_no_spase.split("=")[0]] = math.evaluate(s_no_spase.split("=")[1], scope); 
@@ -541,10 +543,24 @@ cal_cod_app.addEventListener("click", ()=>{
 
 // =====================
 // -------график--------
+const colors = [
+  '#E6194B', // Ярко-красный
+  '#3CB44B', // Сочный зеленый
+  '#000000', // Черный
+  '#4363D8', // Синий
+  '#F58231', // Оранжевый
+  '#911EB4', // Пурпурный
+  '#46F0F0', // Бирюзовый (темный)
+  '#F032E6', // Маджента
+  '#808000', // Оливковый
+  '#000075'  // Темно-синий
+];
 let myChart = null
 let x_arr = []
 let y_arr = []
+let names_grafik = []
 function create_grafik(){
+names_grafik = []
 x_arr = []
 y_arr = []
 grafikstart = -10
@@ -554,12 +570,22 @@ calculate()
 for (let x = Number(grafikstart); x < Number(grafikstop); x+=parseFloat(grafikstep)) {
   inxgrafik = x
   calculate(false, false)
-  if (math.abs(outygrafik)<10000000) {
   x_arr.push(x)
   y_arr.push(outygrafik)}
-}
+
 console.log(x_arr)
 console.log(y_arr)
+
+y_arr_res = y_arr[0].map((_, colIndex) => y_arr.map(row => row[colIndex]));
+console.log(y_arr_res)
+datasetsin=[]
+let ind = 0
+y_arr_res.forEach((yarr) => {datasetsin.push({
+            label: names_grafik[ind],
+            data: yarr,
+            borderColor: colors[ind],
+        }); ind++
+})
 
 if (myChart !== null) {
     myChart.destroy();
@@ -570,13 +596,7 @@ myChart = new Chart(ctx, {
     type: 'line',
     data: {
         labels: x_arr,
-        datasets: [{
-            label: 'Результат формулы',
-            data: y_arr,
-            borderColor: 'rgb(75, 192, 192)',
-            tension: 0, // ВЫКЛЮЧЕНО сглаживание (линия прямая)
-            pointRadius: 3 // Точки как на твоем скрине
-        }]
+        datasets: datasetsin
     },
     options: {
         animation: false, // ВЫКЛЮЧЕНА анимация (график мгновенный)
@@ -594,29 +614,40 @@ document.getElementById("create_grafik_btn").addEventListener("click", () => {cr
 
 
 document.getElementById('export_csv_btn').addEventListener('click', () => {
-    // 1. Проверяем, есть ли данные в массивах (они наполняются при создании графика)
-    // Эти массивы должны быть объявлены глобально или доступны в этой функции
-    if (typeof x_arr === 'undefined' || x_arr.length === 0) {
+    // 1. Проверяем, существует ли график и есть ли в нем данные
+    if (!myChart || !myChart.data.datasets.length) {
         alert("Сначала создайте график!");
         return;
     }
 
-    // 2. Формируем "шапку" таблицы
+    const data = myChart.data;
     let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "X (Inx),Y (Outy)\n"; // Заголовки столбцов
 
-    // 3. Наполняем данными из твоих расчетов
-    for (let i = 0; i < x_arr.length; i++) {
-        csvContent += x_arr[i] + "," + y_arr[i] + "\n";
+    // 2. Формируем шапку таблицы: X и названия всех активных графиков
+    let header = ["X (Inx)"];
+    names_grafik.forEach(label => {
+        header.push(label || "Unnamed");
+    });
+    csvContent += header.join(",") + "\n";
+
+    // 3. Проходим по всем точкам оси X
+    for (let i = 0; i < data.labels.length; i++) {
+        let row = [data.labels[i]]; // Начинаем строку со значения X
+        
+        // Добавляем значения Y для каждого графика в этой точке
+        data.datasets.forEach(dataset => {
+            row.push(dataset.data[i]);
+        });
+        
+        csvContent += row.join(",") + "\n";
     }
-
-    // 4. Создаем "виртуальный файл" и скачиваем его
+    
+    // 4. Скачивание файла
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
     link.setAttribute("download", "my_research_data.csv");
-    document.body.appendChild(link); // Нужно для Firefox
-
-    link.click(); // Имитируем нажатие на ссылку
-    document.body.removeChild(link); // Удаляем временный элемент
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 });
