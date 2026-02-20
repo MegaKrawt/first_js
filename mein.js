@@ -427,13 +427,13 @@ function calculate(print_error = false, updeteUI=true){
                   scope[s.split(" ")[1]]=inxgrafik
                 }
                 if (s.startsWith("#outy")){
-                  outygrafik.push(scope[s.split(" ")[1]])
+                  outygrafik.push(math.evaluate(s.split(" ")[1], scope))
                   if (updeteUI) names_grafik.push(s.split(" ")[2])
                 }
-                if (s.startsWith("#range")){
+                if (s.startsWith("#range") && updeteUI){
                   grafikstart=math.evaluate(s.split(" ")[1], scope)
                   grafikstop=math.evaluate(s.split(" ")[2], scope)
-                  grafikstep=math.evaluate(s.split(" ")[3], scope)
+                  grafikstep=math.evaluate(s.split(" ")[3] || "0", scope)
                 }
             } else if(s.startsWith("//")){continue}
             else{
@@ -567,6 +567,7 @@ grafikstart = -10
 grafikstop = 10
 grafikstep = 0.1
 calculate()
+if (grafikstep == 0){grafikstep = (grafikstop - grafikstart)/500}
 for (let x = Number(grafikstart); x < Number(grafikstop); x+=parseFloat(grafikstep)) {
   inxgrafik = x
   calculate(false, false)
