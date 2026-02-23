@@ -571,6 +571,7 @@ grafikstep = 0.1
 calculate()
 if (grafikstep == 0){grafikstep = (grafikstop - grafikstart)/500}
 for (let x = Number(grafikstart); x < Number(grafikstop); x+=parseFloat(grafikstep)) {
+  x=math.round(x, 10)
   inxgrafik = x
   calculate(false, false)
   x_arr.push(x)
@@ -654,4 +655,5 @@ document.getElementById('export_csv_btn').addEventListener('click', () => {
     link.click();
     document.body.removeChild(link);
 });
+
 
