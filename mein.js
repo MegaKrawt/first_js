@@ -112,7 +112,9 @@ resizeObserver.observe(inputField);
 // Настройка math.js для поддержки любых алфавитов (включая кириллицу)
 math.config({
   predictable: false,
-  epsilon: 1e-12
+  epsilon: 1e-12,
+  number: 'BigNumber', 
+  precision: 20
 });
 
 // Переопределяем правила парсера, чтобы он принимал русские буквы
@@ -652,3 +654,4 @@ document.getElementById('export_csv_btn').addEventListener('click', () => {
     link.click();
     document.body.removeChild(link);
 });
+
