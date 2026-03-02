@@ -42,3 +42,25 @@
     color: #aaa; 
     font-style: italic;
   }
+
+
+
+    #suggestions {
+    position: absolute;
+    background: white;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    display: none;
+    z-index: 1000;
+    max-height: 100px;
+    overflow-y: auto;
+  }
+
+  .suggestion-item {
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+
+  .suggestion-item:hover {
+    background-color: #f0f0f0;
+  }

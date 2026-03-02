@@ -657,3 +657,104 @@ document.getElementById('export_csv_btn').addEventListener('click', () => {
 });
 
 
+
+// =======================
+// --- ПОДСКАЗКИ ВВОДА ---
+// =======================
+
+const wordsList = ["#range", "#outy", "#inx", "#output", "#input"];
+const suggestionsBox = document.getElementById('suggestions');
+
+// Функция получения координат
+function getCaretCoordinates() {
+  const scrollLeft = inputField.scrollLeft;
+  const scrollTop = inputField.scrollTop;
+  const selectionStart = inputField.selectionStart;
+
+  // Создаем временное "зеркало"
+  const div = document.createElement('div');
+  const style = window.getComputedStyle(inputField);
+  
+  // Копируем стили
+  for (const prop of style) {
+    div.style[prop] = style[prop];
+  }
+
+  div.style.position = 'absolute';
+  div.style.visibility = 'hidden';
+  div.style.left = '0';
+  div.style.top = '0';
+  
+  // Берем текст до курсора
+  const textBeforeCaret = inputField.value.substring(0, selectionStart);
+  div.textContent = textBeforeCaret;
+
+  // Создаем маркер в позиции курсора
+  const span = document.createElement('span');
+  span.textContent = inputField.value.substring(selectionStart) || '.';
+  div.appendChild(span);
+
+  document.body.appendChild(div);
+  
+  // Координаты относительно окна
+  const rect = inputField.getBoundingClientRect();
+  const spanRect = span.getBoundingClientRect();
+  
+  const x = spanRect.left - scrollLeft;
+  const y = spanRect.top - scrollTop + window.scrollY;
+
+  document.body.removeChild(div);
+  return { x, y };
+}
+
+inputField.addEventListener('input', () => {
+    const value = inputField.value;
+    const cursorIndex = inputField.selectionStart;
+    
+    // 1. Ищем ближайший разделитель (пробел или перенос строки) перед курсором
+    // Регулярное выражение /\s/ ищет пробелы, табы и переносы строк (\n)
+    const textBeforeCursor = value.substring(0, cursorIndex);
+    const lastSeparatorIndex = Math.max(
+        textBeforeCursor.lastIndexOf(' '), 
+        textBeforeCursor.lastIndexOf('\n')
+    );
+
+    // 2. Вырезаем слово от последнего разделителя до курсора
+    const currentWord = textBeforeCursor.substring(lastSeparatorIndex + 1).toLowerCase();
+
+    if (currentWord.length > 0) {
+        const matches = wordsList.filter(w => w.startsWith(currentWord));
+        
+        if (matches.length > 0) {
+            const coords = getCaretCoordinates();
+            
+            suggestionsBox.innerHTML = '';
+            suggestionsBox.style.display = 'block';
+            suggestionsBox.style.left = coords.x + 'px';
+            suggestionsBox.style.top = (coords.y + 20) + 'px';
+
+            matches.forEach(match => {
+                const item = document.createElement('div');
+                item.className = 'suggestion-item';
+                item.textContent = match;
+                item.onclick = () => {
+                    // 3. При вставке сохраняем всё, что было до этого слова (включая Enter)
+                    const before = value.substring(0, lastSeparatorIndex + 1);
+                    const after = value.substring(cursorIndex);
+                    inputField.value = before + match + after;
+                    suggestionsBox.style.display = 'none';
+                    inputField.focus();
+                };
+                suggestionsBox.appendChild(item);
+            });
+            return;
+        }
+    }
+    suggestionsBox.style.display = 'none';
+});
+
+// Закрывать при клике мимо
+document.addEventListener('click', (e) => {
+  if (e.target !== inputField) suggestionsBox.style.display = 'none';
+});
+
