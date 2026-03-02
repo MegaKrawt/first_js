@@ -203,14 +203,14 @@ document.querySelector('#hideInput').addEventListener('change', function() {
     if (!this.checked) {
         textarea_div.style.display = 'block';
         button.style.display = 'block';
-        document.getElementById("hide_klaviatyr").style.display = 'block';
+        // document.getElementById("hide_klaviatyr").style.display = 'block';
         keyboard_.style.display = 'grid';
         velues_names_.style.display = "block"
         document.querySelector('#hideKaybord').checked=0
     } else {
         textarea_div.style.display = 'none';
         button.style.display = 'none';
-        document.getElementById("hide_klaviatyr").style.display = 'none';
+        // document.getElementById("hide_klaviatyr").style.display = 'none';
         keyboard_.style.display = 'none';
         velues_names_.style.display = "none"
         document.querySelector('#hideKaybord').checked=1
@@ -269,6 +269,9 @@ loadInterfaceSettings();
 inputField.readOnly = true; 
 
 document.querySelector('#hide_klaviatyr').addEventListener('click', function(){
+    inputField.readOnly = false
+})
+inputField.addEventListener('click', function(){
     inputField.readOnly = false
 })
 
