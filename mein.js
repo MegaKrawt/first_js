@@ -429,7 +429,7 @@ function calculate(print_error = false, updeteUI=true){
                   resultText = ` = ${scope[s.split(" ")[1]]}`;
                 }
                 if (s.startsWith("#inx")){
-                  scope[s.split(" ")[1]]=inxgrafik
+                  scope[s.split(" ")[1]]=math.bignumber(inxgrafik)
                 }
                 if (s.startsWith("#outy")){
                   outygrafik.push(math.evaluate(s.split(" ")[1], scope))
@@ -760,5 +760,6 @@ inputField.addEventListener('input', () => {
 document.addEventListener('click', (e) => {
   if (e.target !== inputField) suggestionsBox.style.display = 'none';
 });
+
 
 
