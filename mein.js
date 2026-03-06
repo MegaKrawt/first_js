@@ -440,7 +440,7 @@ function calculate(print_error = false, updeteUI=true){
                   grafikstop=math.evaluate(s.split(" ")[2], scope)
                   grafikstep=math.evaluate(s.split(" ")[3] || "0", scope)
                 }
-            } else if(s.startsWith("//")){continue}
+            } else if(s.startsWith("//")){ghostContent += `<span></span>\n`; continue}
             else{
                 try{
                     scope[s_no_spase.split("=")[0]] = math.evaluate(s_no_spase.split("=")[1], scope); 
@@ -760,4 +760,5 @@ inputField.addEventListener('input', () => {
 document.addEventListener('click', (e) => {
   if (e.target !== inputField) suggestionsBox.style.display = 'none';
 });
+
 
