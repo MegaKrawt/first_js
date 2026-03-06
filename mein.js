@@ -415,6 +415,7 @@ function calculate(print_error = false, updeteUI=true){
             if (s == ''){ghostContent += `<span></span>\n`; continue}
             let isError = false
             let resultText = '';
+            try {
             if (s[0]=="#"){
               if ("#input" == s.slice(0, 6)){
                   appForIn.push(s.split(" ")[2])
@@ -446,7 +447,7 @@ function calculate(print_error = false, updeteUI=true){
                     scope[s_no_spase.split("=")[0]] = math.evaluate(s_no_spase.split("=")[1], scope); 
                     resultText = ` = ${scope[s_no_spase.split("=")[0]]}`;
                 }catch{scope[s_no_spase.split('=')[0]]='error'; isError = true}
-            };
+            }}catch{isError = true}
             if (isError) {
                 ghostContent += `<span>${escapeHTML(s)}</span><span style="color: #ff4d4d; font-weight: bold;"> !! ошибка</span>\n`;}
             else if(resultText == " = undefined"){ghostContent += `<span>${escapeHTML(s)}</span><span style="color: #ff4d4d"> = undefined</span>\n`;}
@@ -760,6 +761,7 @@ inputField.addEventListener('input', () => {
 document.addEventListener('click', (e) => {
   if (e.target !== inputField) suggestionsBox.style.display = 'none';
 });
+
 
 
 
