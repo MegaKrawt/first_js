@@ -625,7 +625,9 @@ document.getElementById("create_grafik_btn").addEventListener("click", () => {cr
 
 
 
+document.getElementById("euro_csv").checked = 1
 document.getElementById('export_csv_btn').addEventListener('click', () => {
+    let euro_csv = document.getElementById("euro_csv").checked
     // 1. Проверяем, существует ли график и есть ли в нем данные
     if (!myChart || !myChart.data.datasets.length) {
         alert("Сначала создайте график!");
@@ -633,14 +635,14 @@ document.getElementById('export_csv_btn').addEventListener('click', () => {
     }
 
     const data = myChart.data;
-    let csvContent = "data:text/csv;charset=utf-8,";
+    let csvContent = "";
 
     // 2. Формируем шапку таблицы: X и названия всех активных графиков
     let header = ["X (Inx)"];
     names_grafik.forEach(label => {
         header.push(label || "Unnamed");
     });
-    csvContent += header.join(";") + "\n";
+    csvContent += header.join(euro_csv  ? ";" : ",") + "\n";
 
     // 3. Проходим по всем точкам оси X
     for (let i = 0; i < data.labels.length; i++) {
@@ -651,17 +653,26 @@ document.getElementById('export_csv_btn').addEventListener('click', () => {
             row.push(dataset.data[i]);
         });
         
-        csvContent += row.join(";") + "\n";
+        csvContent += row.join(euro_csv  ? ";" : ",") + "\n";
     }
+    if (euro_csv){csvContent = csvContent.replaceAll('.', ',')}
     
     // 4. Скачивание файла
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "my_research_data.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    console.log(csvContent)
+// 1. В csvContent должен быть ТОЛЬКО текст таблицы (без data:text/csv)
+const blob = new Blob(["\uFEFF", csvContent], { type: 'text/csv' });
+const url = URL.createObjectURL(blob);
+
+// 2. Создаем ссылку и "кликаем"
+const a = document.createElement('a');
+a.href = url;
+a.download = 'research.csv';
+a.click();
+
+// 3. Чистим память
+URL.revokeObjectURL(url);
+
+    
 });
 
 
