@@ -636,7 +636,7 @@ document.getElementById('export_csv_btn').addEventListener('click', () => {
     names_grafik.forEach(label => {
         header.push(label || "Unnamed");
     });
-    csvContent += header.join(",") + "\n";
+    csvContent += header.join(";") + "\n";
 
     // 3. Проходим по всем точкам оси X
     for (let i = 0; i < data.labels.length; i++) {
@@ -647,7 +647,7 @@ document.getElementById('export_csv_btn').addEventListener('click', () => {
             row.push(dataset.data[i]);
         });
         
-        csvContent += row.join(",") + "\n";
+        csvContent += row.join(";") + "\n";
     }
     
     // 4. Скачивание файла
@@ -761,6 +761,7 @@ inputField.addEventListener('input', () => {
 document.addEventListener('click', (e) => {
   if (e.target !== inputField) suggestionsBox.style.display = 'none';
 });
+
 
 
 
