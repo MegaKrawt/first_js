@@ -600,18 +600,22 @@ if (myChart !== null) {
 }
 const ctx = document.getElementById('myChart').getContext('2d');
 
+Chart.defaults.font.size = 20;
+Chart.defaults.elements.line.borderWidth = 6;
+Chart.defaults.elements.point.radius = 8;
+Chart.defaults.elements.point.hoverRadius = 12; 
+
 myChart = new Chart(ctx, {
     type: 'line',
-    data: {
-        labels: x_arr,
-        datasets: datasetsin
-    },
+    data: { labels: x_arr, datasets: datasetsin },
     options: {
-        animation: false, // ВЫКЛЮЧЕНА анимация (график мгновенный)
+        devicePixelRatio: 1,
+        animation: false,
         scales: {
-            y: {
-                beginAtZero: true
-            }
+            y: { beginAtZero: true }
+        },
+        plugins: {
+            tooltip: { bodyFont: { size: 20 } } // Оставляем только для всплывашек
         }
     }
 });
