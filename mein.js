@@ -239,7 +239,7 @@ function saveInterfaceSettings() {
 function loadInterfaceSettings() {
     const saved = JSON.parse(localStorage.getItem('interfaceSettings'));
     if (saved) {
-        const ids = ['hideResult', 'hideInput', 'hideKaybord'];
+        const ids = ['hideResult', 'hideInput', 'hideKaybord', 'hideMobKaybord'];
         
         ids.forEach(id => {
             const chk = document.querySelector(`#${id}`);
