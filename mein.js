@@ -229,7 +229,8 @@ function saveInterfaceSettings() {
     const settings = {
         hideResult: document.querySelector('#hideResult').checked,
         hideInput: document.querySelector('#hideInput').checked,
-        hideKaybord: document.querySelector('#hideKaybord').checked
+        hideKaybord: document.querySelector('#hideKaybord').checked,
+        hideMobKaybord: document.getElementById('hideMobKaybord').checked
     };
     localStorage.setItem('interfaceSettings', JSON.stringify(settings));
 }
