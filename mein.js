@@ -266,7 +266,6 @@ loadInterfaceSettings();
 
 // СТАРТОВАЯ НАСТРОЙКА: Сразу делаем поле ReadOnly, чтобы при первом тапе 
 // клавиатура телефона не появлялась. Мы вернем его в false позже.
-inputField.readOnly = true; 
 
 document.querySelector('#hide_klaviatyr').addEventListener('click', function(){
     inputField.readOnly = false
@@ -320,9 +319,6 @@ function handleVirtualKey(e) {
     
     // 2. ЛОГИКА СКРЫТИЯ КЛАВИАТУРЫ
     // Временно ставим readOnly, чтобы при blur/focus клавиатура телефона скрылась.
-    inputField.readOnly = true;
-    inputField.blur();
-    inputField.focus(); 
     
     // 3. ВСТАВКА СИМВОЛА
     const button = e.currentTarget;
@@ -339,11 +335,11 @@ function handleVirtualKey(e) {
     }
     
     // На всякий случай возвращаем фокус (хотя он уже был возвращен выше)
-    inputField.focus();
+    if (!document.getElementById('hideMobKaybord').checked){inputField.focus()}
 
     // 4. ВОЗВРАЩАЕМ ВОЗМОЖНОСТЬ ввода с внешней клавиатуры (если вы не хотите,
     // чтобы пользователь мог использовать нативную клавиатуру, удалите эту строку)
-    // inputField.readOnly = false; 
+
 
     calculate()
     
@@ -357,17 +353,13 @@ function handleVirtualKey(e) {
 
 // Все символьные кнопки
 keyButtons.forEach(button => {
-    // touchstart для быстрого отклика на мобильных, click для ПК
-    button.addEventListener('touchstart', handleVirtualKey);
     button.addEventListener('click', handleVirtualKey);
 });
 
 // Кнопка УДАЛИТЬ
-backspaceButton.addEventListener('touchstart', handleVirtualKey);
 backspaceButton.addEventListener('click', handleVirtualKey);
 
 // Кнопка ВВОД (новая строка)
-enterButton.addEventListener('touchstart', handleVirtualKey);
 enterButton.addEventListener('click', handleVirtualKey);
 
 
@@ -466,8 +458,6 @@ function calculate(print_error = false, updeteUI=true){
                 //  keyButtons = document.querySelectorAll('.key-btn')
                  targetDiv.appendChild(newButton)
 
-                // touchstart для быстрого отклика на мобильных, click для ПК
-                newButton.addEventListener('touchstart', handleVirtualKey);
                 newButton.addEventListener('click', handleVirtualKey);
             }
         }}
