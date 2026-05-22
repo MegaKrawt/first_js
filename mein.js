@@ -202,14 +202,14 @@ document.querySelector('#hideInput').addEventListener('change', function() {
     const velues_names_=document.getElementById("velues_names")
     if (!this.checked) {
         textarea_div.style.display = 'block';
-        button.style.display = 'block';
+        // button.style.display = 'block';
         // document.getElementById("hide_klaviatyr").style.display = 'block';
         keyboard_.style.display = 'grid';
         velues_names_.style.display = "block"
         document.querySelector('#hideKaybord').checked=0
     } else {
         textarea_div.style.display = 'none';
-        button.style.display = 'none';
+        // button.style.display = 'none';
         // document.getElementById("hide_klaviatyr").style.display = 'none';
         keyboard_.style.display = 'none';
         velues_names_.style.display = "none"
@@ -437,8 +437,10 @@ function calculate(print_error = false, updeteUI=true){
             } else if(s.startsWith("//")){ghostContent += `<span></span>\n`; continue}
             else{
                 try{
+                    if (s_no_spase.includes("=")){                    
                     scope[s_no_spase.split("=")[0]] = math.evaluate(s_no_spase.split("=")[1], scope); 
-                    resultText = ` = ${scope[s_no_spase.split("=")[0]]}`;
+                    resultText = ` = ${scope[s_no_spase.split("=")[0]]}`;}
+                    else{resultText = ` = ${math.evaluate(s_no_spase, scope)}`}
                 }catch{scope[s_no_spase.split('=')[0]]='error'; isError = true}
             }}catch{isError = true}
             if (isError) {
