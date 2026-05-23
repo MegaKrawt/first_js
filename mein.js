@@ -31,12 +31,14 @@ window.addEventListener('load', () => {
                 // Если такой инпут был создан в твоем объекте app_arr_in
                 if (app_arr_in[varName]) {
                     app_arr_in[varName].value = value;
+                    app_arr_in[varName].dispatchEvent(new Event('input', {bubbles: true}));
                 }
             }
         });
         // 3. Пересчитываем всё с новыми значениями
         calculate(); 
         cal_cod_app.click(); // Обновляем вывод в приложении
+        create_grafik()
         
         document.querySelector('#hideResult').checked=0; document.querySelector('#hideResult').click();
         if (codeFromUrl.includes("#input")){
@@ -513,6 +515,13 @@ update_cod_app.addEventListener("click", ()=>{
     // 3. Добавляем на страницу
     cod_app_in.appendChild(text);
     cod_app_in.appendChild(input);
+        if (i[1] != undefined){
+        const text2 = document.createElement('span');
+        text2.textContent = " = " + input.value
+        text2.style.fontSize = "40px"
+        cod_app_in.appendChild(text2);
+        input.addEventListener("input", (e)=>{text2.textContent = " = " + input.value})
+    }
     cod_app_in.appendChild(document.createElement("br"));
     })
     
