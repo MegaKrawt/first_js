@@ -411,7 +411,9 @@ function calculate(print_error = false, updeteUI=true){
             try {
             if (s[0]=="#"){
               if ("#input" == s.slice(0, 6)){
-                  appForIn.push(s.split(" ")[2])
+                  let slider_setings = s.split(" ")[3]
+                  if (slider_setings == undefined){appForIn.push([s.split(" ")[2], undefined])}
+                  else{appForIn.push([s.split(" ")[2], slider_setings.split(':')])}
                   try{
                   scope[s.split(" ")[1]]=math.evaluate(app_arr_in[s.split(" ")[2]].value)
                   resultText = ` = ${scope[s.split(" ")[1]]}`;
@@ -495,17 +497,19 @@ update_cod_app.addEventListener("click", ()=>{
     app_arr_in = {}
     
     appForIn.forEach((i)=>{
+    console.log(i)
     // 1. Создаем элементы
     const text = document.createElement('span');
     const input = document.createElement('input');
+    if (i[1] != undefined){Object.assign(input, { type: 'range', min: i[1][0], max: i[1][1], step: i[1][2], value: i[1][0] });}
     // 2. Настраиваем их
-    text.textContent = i + " = "        // Добавляем текст
+    text.textContent = i[0] + " = "        // Добавляем текст
     text.style.fontSize = "40px"
-    input.type = 'tel';        // Указываем тип инпута
+    if (i[1] == undefined){input.type = 'tel'};        // Указываем тип инпута
     input.style.fontSize = "40px"
     input.style.width = "200px"
-    input.addEventListener("input", (e)=>{cal_cod_app.click()})
-    app_arr_in[i]=input
+    input.addEventListener("input", (e)=>{cal_cod_app.click(); create_grafik()})
+    app_arr_in[i[0]]=input
     // 3. Добавляем на страницу
     cod_app_in.appendChild(text);
     cod_app_in.appendChild(input);
