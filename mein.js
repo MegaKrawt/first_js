@@ -45,6 +45,7 @@ window.addEventListener('load', () => {
           document.querySelector('#hideInput').checked=0; document.querySelector('#hideInput').click();}
         else{document.querySelector('#hideInput').checked=1; document.querySelector('#hideInput').click();}
     }
+    else{inputField.value = JSON.parse(localStorage.getItem('auto_save'))}
 });
 
 function generateShareLink() {
@@ -482,7 +483,7 @@ function calculate(print_error = false, updeteUI=true){
 let scope = {};
 const targetDiv = document.getElementById('velues_names')
 button.addEventListener('click', ()=>{calculate(true)});
-inputField.addEventListener('input', ()=>{calculate(false)});
+inputField.addEventListener('input', ()=>{calculate(false); localStorage.setItem('auto_save', JSON.stringify(inputField.value))});
 
 
 
