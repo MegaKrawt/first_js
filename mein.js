@@ -572,6 +572,7 @@ let myChart = null
 let x_arr = []
 let y_arr = []
 let names_grafik = []
+document.getElementById('beginAtZeroY').addEventListener('change', function(){create_grafik()})
 function create_grafik(){
 names_grafik = []
 x_arr = []
@@ -581,7 +582,7 @@ grafikstop = 10
 grafikstep = 0.1
 calculate()
 if (grafikstep == 0){grafikstep = (grafikstop - grafikstart)/500}
-for (let x = Number(grafikstart); x < Number(grafikstop); x+=parseFloat(grafikstep)) {
+for (let x = Number(grafikstart); x < Number(grafikstop)+Number(grafikstep); x+=parseFloat(grafikstep)) {
   x=math.round(x, 10)
   inxgrafik = x
   calculate(false, false)
@@ -619,7 +620,7 @@ myChart = new Chart(ctx, {
         devicePixelRatio: 1,
         animation: false,
         scales: {
-            y: { beginAtZero: true }
+            y: { beginAtZero: document.getElementById('beginAtZeroY').checked }
         },
         plugins: {
             tooltip: { bodyFont: { size: 20 } } // Оставляем только для всплывашек
@@ -688,7 +689,7 @@ URL.revokeObjectURL(url);
 // --- ПОДСКАЗКИ ВВОДА ---
 // =======================
 
-const wordsList = ["#range", "#outy", "#inx", "#output", "#input"];
+const wordsList = ["#input", "#output", "#inx", "#outy","#range"];
 const suggestionsBox = document.getElementById('suggestions');
 
 // Функция получения координат
