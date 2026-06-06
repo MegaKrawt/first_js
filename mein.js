@@ -45,7 +45,10 @@ window.addEventListener('load', () => {
           document.querySelector('#hideInput').checked=0; document.querySelector('#hideInput').click();}
         else{document.querySelector('#hideInput').checked=1; document.querySelector('#hideInput').click();}
     }
-    else{inputField.value = JSON.parse(localStorage.getItem('auto_save'))}
+    else{inputField.value = JSON.parse(localStorage.getItem('auto_save'))
+        calculate()
+        cal_cod_app.click()
+        create_grafik()}
 });
 
 function generateShareLink() {
