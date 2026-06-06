@@ -424,8 +424,8 @@ function calculate(print_error = false, updeteUI=true){
                   catch{scope[s.split(" ")[1]]="error"; isError = true}
                 }
                 if ("#output" == s.slice(0, 7)){
-                  app_arr_out[s.split(" ")[2]]=scope[s.split(" ")[1]]
-                  resultText = ` = ${scope[s.split(" ")[1]]}`;
+                  app_arr_out[s.split(" ")[2]]=math.evaluate(s.split(" ")[1], scope)
+                  resultText = ` = ${math.evaluate(s.split(" ")[1], scope)}`;
                 }
                 if (s.startsWith("#inx")){
                   scope[s.split(" ")[1]]=math.bignumber(inxgrafik)
