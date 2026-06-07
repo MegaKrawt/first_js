@@ -406,10 +406,22 @@ function calculate(print_error = false, updeteUI=true){
     result.innerHTML = 'Результат: <br>'; // Очищаем и ставим заголовок
     let ghostContent = '';
     outygrafik=[]
+    let do_ghostContent = true
     
     try {
         appForIn = []
-        for (const s of processText()) {
+        const processTextRes = processText()
+        let line_ind = -1
+        let calc_step = 0
+        while (line_ind < processTextRes.length-1) {
+            line_ind ++
+            calc_step ++
+            if (calc_step > 100){break}
+            const s = processTextRes[line_ind]
+            console.log(s)
+            console.log(calc_step)
+            console.log(line_ind)
+            
             s_no_spase = s.replaceAll(" ", "")
             if (s == ''){ghostContent += `<span></span>\n`; continue}
             let isError = false
@@ -442,6 +454,10 @@ function calculate(print_error = false, updeteUI=true){
                   grafikstop=math.evaluate(s.split(" ")[2], scope)
                   grafikstep=math.evaluate(s.split(" ")[3] || "0", scope)
                 }
+                if (s.startsWith("#jampif")){
+                  if(math.evaluate(s.split(" ")[2], scope)){line_ind = Number(s.split(" ")[1])-1; do_ghostContent = false}
+                  else{do_ghostContent = true}
+                }
             } else if(s.startsWith("//")){ghostContent += `<span></span>\n`; continue}
             else{
                 try{
@@ -451,10 +467,11 @@ function calculate(print_error = false, updeteUI=true){
                     else{resultText = ` = ${math.evaluate(s_no_spase, scope)}`}
                 }catch{scope[s_no_spase.split('=')[0]]='error'; isError = true}
             }}catch{isError = true}
+            if (do_ghostContent){
             if (isError) {
                 ghostContent += `<span>${escapeHTML(s)}</span><span style="color: #ff4d4d; font-weight: bold;"> !! ошибка</span>\n`;}
             else if(resultText == " = undefined"){ghostContent += `<span>${escapeHTML(s)}</span><span style="color: #ff4d4d"> = undefined</span>\n`;}
-            else{ghostContent += `<span>${escapeHTML(s)}</span><span class="res">${escapeHTML(resultText)}</span>\n`;}
+            else{ghostContent += `<span>${escapeHTML(s)}</span><span class="res">${escapeHTML(resultText)}</span>\n`;}}
         }; ghost.innerHTML = ghostContent;
         if (updeteUI){
         targetDiv.innerHTML = ''
@@ -474,6 +491,7 @@ function calculate(print_error = false, updeteUI=true){
         }}
         
     } catch (e) {
+        console.error("Math.js Error:", e);
         if (print_error){
         // Ловим и отображаем ошибки вычисления
         result.innerHTML = `<span style="color: red;">Ошибка: ${e.message}</span>`;
@@ -692,7 +710,7 @@ URL.revokeObjectURL(url);
 // --- ПОДСКАЗКИ ВВОДА ---
 // =======================
 
-const wordsList = ["#input", "#output", "#inx", "#outy","#range"];
+const wordsList = ["#input", "#output", "#inx", "#outy","#range", '#jampif'];
 const suggestionsBox = document.getElementById('suggestions');
 
 // Функция получения координат
