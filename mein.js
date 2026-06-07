@@ -47,6 +47,7 @@ window.addEventListener('load', () => {
     }
     else{inputField.value = JSON.parse(localStorage.getItem('auto_save'))
         calculate()
+        update_cod_app.click()
         cal_cod_app.click()
         create_grafik()}
 });
@@ -434,8 +435,10 @@ function calculate(print_error = false, updeteUI=true){
                   scope[s.split(" ")[1]]=math.bignumber(inxgrafik)
                 }
                 if (s.startsWith("#outy")){
-                  outygrafik.push(math.evaluate(s.split(" ")[1], scope))
-                  if (updeteUI) names_grafik.push(s.split(" ")[2])
+                  if (math.isNumeric(math.evaluate(s.split(" ")[1], scope))){
+                    outygrafik.push(math.evaluate(s.split(" ")[1], scope))}
+                  else{outygrafik.push(NaN)}
+                  if (updeteUI) names_grafik.push([s.split(" ")[2], s.split(" ")[3]])
                 }
                 if (s.startsWith("#range") && updeteUI){
                   grafikstart=math.evaluate(s.split(" ")[1], scope)
@@ -600,9 +603,9 @@ console.log(y_arr_res)
 datasetsin=[]
 let ind = 0
 y_arr_res.forEach((yarr) => {datasetsin.push({
-            label: names_grafik[ind],
+            label: names_grafik[ind][0],
             data: yarr,
-            borderColor: colors[ind],
+            borderColor: names_grafik[ind][1] || colors[ind],
         }); ind++
 })
 
@@ -651,7 +654,7 @@ document.getElementById('export_csv_btn').addEventListener('click', () => {
     // 2. Формируем шапку таблицы: X и названия всех активных графиков
     let header = ["X (Inx)"];
     names_grafik.forEach(label => {
-        header.push(label || "Unnamed");
+        header.push(label[0] || "Unnamed");
     });
     csvContent += header.join(euro_csv  ? ";" : ",") + "\n";
 
