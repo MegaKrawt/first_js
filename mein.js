@@ -448,10 +448,7 @@ function calculate(print_error = false, updeteUI=true){
             } else if(s.startsWith("//")){ghostContent += `<span></span>\n`; continue}
             else{
                 try{
-                    if (s_no_spase.includes("=")){                    
-                    scope[s_no_spase.split("=")[0]] = math.evaluate(s_no_spase.split("=")[1], scope); 
-                    resultText = ` = ${scope[s_no_spase.split("=")[0]]}`;}
-                    else{resultText = ` = ${math.evaluate(s_no_spase, scope)}`}
+                    resultText = ` = ${math.evaluate(s_no_spase, scope)}`
                 }catch{scope[s_no_spase.split('=')[0]]='error'; isError = true}
             }}catch{isError = true}
             if (isError) {
