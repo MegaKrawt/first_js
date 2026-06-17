@@ -423,7 +423,6 @@ function calculate(print_error = false, updeteUI=true){
                     else{appForIn.push([s.split(" ")[2], slider_setings.split(':')])}}
                   try{
                   scope[s.split(" ")[1]]=math.evaluate(app_arr_in[s.split(" ")[2] || s.split(" ")[1]].value)
-                  console.log(s.split(" ")[2] || s.split(" ")[1])
                   resultText = ` = ${scope[s.split(" ")[1]]}`;
                   }
                   catch{scope[s.split(" ")[1]]="error"; isError = true}
