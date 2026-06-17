@@ -31,7 +31,7 @@ window.addEventListener('load', () => {
                 // Если такой инпут был создан в твоем объекте app_arr_in
                 if (app_arr_in[varName]) {
                     app_arr_in[varName].value = value;
-                    app_arr_in[varName].dispatchEvent(new Event('input', {bubbles: true}));
+                    if (app_arr_in[varName].type == 'range'){app_arr_in[varName].dispatchEvent(new Event('updRes', {bubbles: true}));}
                 }
             }
         });
@@ -411,16 +411,16 @@ function calculate(print_error = false, updeteUI=true){
     try {
         appForIn = []
         for (const s of processText()) {
-            s_no_spase = s.replaceAll(" ", "")
             if (s == ''){ghostContent += `<span></span>\n`; continue}
             let isError = false
             let resultText = '';
             try {
             if (s[0]=="#"){
               if ("#input" == s.slice(0, 6)){
-                  let slider_setings = s.split(" ")[3]
-                  if (slider_setings == undefined){appForIn.push([s.split(" ")[2], undefined])}
-                  else{appForIn.push([s.split(" ")[2], slider_setings.split(':')])}
+                  if (updeteUI){
+                    let slider_setings = s.split(" ")[3]
+                    if (slider_setings == undefined){appForIn.push([s.split(" ")[2], undefined])}
+                    else{appForIn.push([s.split(" ")[2], slider_setings.split(':')])}}
                   try{
                   scope[s.split(" ")[1]]=math.evaluate(app_arr_in[s.split(" ")[2]].value)
                   resultText = ` = ${scope[s.split(" ")[1]]}`;
@@ -448,15 +448,18 @@ function calculate(print_error = false, updeteUI=true){
             } else if(s.startsWith("//")){ghostContent += `<span></span>\n`; continue}
             else{
                 try{
-                    resultText = ` = ${math.evaluate(s_no_spase, scope)}`
-                }catch{scope[s_no_spase.split('=')[0]]='error'; isError = true}
+                    resultText = ` = ${math.evaluate(s, scope)}`
+                }catch{scope[s.split('=')[0].replaceAll(" ", "")]='error'; isError = true}
             }}catch{isError = true}
-            if (isError) {
-                ghostContent += `<span>${escapeHTML(s)}</span><span style="color: #ff4d4d; font-weight: bold;"> !! ошибка</span>\n`;}
-            else if(resultText == " = undefined"){ghostContent += `<span>${escapeHTML(s)}</span><span style="color: #ff4d4d"> = undefined</span>\n`;}
-            else{ghostContent += `<span>${escapeHTML(s)}</span><span class="res">${escapeHTML(resultText)}</span>\n`;}
-        }; ghost.innerHTML = ghostContent;
+            if(updeteUI){
+                if (isError) {
+                    ghostContent += `<span>${escapeHTML(s)}</span><span style="color: #ff4d4d; font-weight: bold;"> !! ошибка</span>\n`;}
+                else if(resultText == " = undefined"){ghostContent += `<span>${escapeHTML(s)}</span><span style="color: #ff4d4d"> = undefined</span>\n`;}
+                else{ghostContent += `<span>${escapeHTML(s)}</span><span class="res">${escapeHTML(resultText)}</span>\n`;}}
+        }; 
         if (updeteUI){
+        ghost.innerHTML = ghostContent;
+        
         targetDiv.innerHTML = ''
         for (const key in scope){
             if (Object.hasOwn(scope, key)) {
@@ -525,6 +528,7 @@ update_cod_app.addEventListener("click", ()=>{
         text2.style.fontSize = "40px"
         cod_app_in.appendChild(text2);
         input.addEventListener("input", (e)=>{text2.textContent = " = " + input.value})
+        input.addEventListener("updRes", (e)=>{text2.textContent = " = " + input.value})
     }
     cod_app_in.appendChild(document.createElement("br"));
     })
@@ -599,6 +603,7 @@ y_arr_res = y_arr[0].map((_, colIndex) => y_arr.map(row => row[colIndex]));
 console.log(y_arr_res)
 datasetsin=[]
 let ind = 0
+calculate()
 y_arr_res.forEach((yarr) => {datasetsin.push({
             label: names_grafik[ind][0],
             data: yarr,
