@@ -561,6 +561,40 @@ cal_cod_app.addEventListener("click", ()=>{
 
 
 
+
+// Функция преобразования в красивую степень 10
+function formatScientific(num, decimals = 2) {
+  if (num === 0) return '0';
+  if (num >= 0.00001 && num <= 1000000) {
+    if (num >= 1000) return Number(num.toFixed(2)).toLocaleString('ru-RU').replace(',', '.');
+    if (num >= 100) return Number(num.toFixed(2));
+    if (num >= 10) return Number(num.toFixed(2));
+    if (num >= 1) return Number(num.toFixed(3));
+    if (num >= 0.1) return Number(num.toFixed(3));
+    return Number(num.toFixed(5));
+  }
+
+  // Получаем стандартную строку типа "1.5e-7"
+  const expStr = num.toExponential(decimals); 
+  const parts = expStr.split('e');
+  
+  const base = parts[0];
+  const exponent = parseInt(parts[1], 10);
+  
+  // Карта надстрочных знаков для красивого отображения степени
+  const superscripts = {
+    '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', 
+    '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹'
+  };
+  
+  // Переводим цифры степени (например, -7) в надстрочные символы (⁻⁷)
+  const prettyExponent = String(exponent)
+    .split('')
+    .map(char => superscripts[char] || char)
+    .join('');
+    
+  return `${base} × 10${prettyExponent}`;
+}
 // =====================
 // -------график--------
 const colors = [
@@ -631,7 +665,21 @@ myChart = new Chart(ctx, {
             y: { beginAtZero: document.getElementById('beginAtZeroY').checked }
         },
         plugins: {
-            tooltip: { bodyFont: { size: 20 } } // Оставляем только для всплывашек
+            tooltip: {
+                bodyFont: { size: 20 },
+                callbacks: {
+                    label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) label += ': ';
+                        if (context.parsed.y !== null) {
+                        // Вызываем нашу красивую функцию
+                        label += formatScientific(context.parsed.y, 2); 
+                        }
+                        return label;
+                    }
+                }
+            }
+
         }
     }
 });
