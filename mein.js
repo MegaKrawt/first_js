@@ -419,16 +419,17 @@ function calculate(print_error = false, updeteUI=true){
               if ("#input" == s.slice(0, 6)){
                   if (updeteUI){
                     let slider_setings = s.split(" ")[3]
-                    if (slider_setings == undefined){appForIn.push([s.split(" ")[2], undefined])}
+                    if (slider_setings == undefined){appForIn.push([s.split(" ")[2] || s.split(" ")[1], undefined])}
                     else{appForIn.push([s.split(" ")[2], slider_setings.split(':')])}}
                   try{
-                  scope[s.split(" ")[1]]=math.evaluate(app_arr_in[s.split(" ")[2]].value)
+                  scope[s.split(" ")[1]]=math.evaluate(app_arr_in[s.split(" ")[2] || s.split(" ")[1]].value)
+                  console.log(s.split(" ")[2] || s.split(" ")[1])
                   resultText = ` = ${scope[s.split(" ")[1]]}`;
                   }
                   catch{scope[s.split(" ")[1]]="error"; isError = true}
                 }
                 if ("#output" == s.slice(0, 7)){
-                  app_arr_out[s.split(" ")[2]]=math.evaluate(s.split(" ")[1], scope)
+                  app_arr_out[s.split(" ")[2] || s.split(" ")[1]]=math.evaluate(s.split(" ")[1], scope)
                   resultText = ` = ${math.evaluate(s.split(" ")[1], scope)}`;
                 }
                 if (s.startsWith("#inx")){
@@ -438,7 +439,7 @@ function calculate(print_error = false, updeteUI=true){
                   if (math.isNumeric(math.evaluate(s.split(" ")[1], scope))){
                     outygrafik.push(math.evaluate(s.split(" ")[1], scope))}
                   else{outygrafik.push(NaN)}
-                  if (updeteUI) names_grafik.push([s.split(" ")[2], s.split(" ")[3]])
+                  if (updeteUI) names_grafik.push([s.split(" ")[2] || s.split(" ")[1], s.split(" ")[3]])
                 }
                 if (s.startsWith("#range") && updeteUI){
                   grafikstart=math.evaluate(s.split(" ")[1], scope)
