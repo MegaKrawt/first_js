@@ -351,7 +351,7 @@ function handleVirtualKey(e) {
 
     calculate()
     localStorage.setItem('auto_save', JSON.stringify(inputField.value))
-    
+    if (keyChar == '#') updeteINPUT_HELP()
     
 }
 
@@ -364,6 +364,8 @@ function handleVirtualKey(e) {
 keyButtons.forEach(button => {
     button.addEventListener('click', handleVirtualKey);
 });
+const buttonReshetka = document.getElementById('buttonReshetka')
+buttonReshetka.addEventListener('click', handleVirtualKey);
 
 // Кнопка УДАЛИТЬ
 backspaceButton.addEventListener('click', handleVirtualKey);
@@ -791,7 +793,9 @@ function getCaretCoordinates() {
   return { x, y };
 }
 
-inputField.addEventListener('input', () => {
+inputField.addEventListener('input', updeteINPUT_HELP);
+inputField.addEventListener('click', updeteINPUT_HELP);
+function updeteINPUT_HELP(){
     const value = inputField.value;
     const cursorIndex = inputField.selectionStart;
     
@@ -836,11 +840,11 @@ inputField.addEventListener('input', () => {
         }
     }
     suggestionsBox.style.display = 'none';
-});
+}
 
 // Закрывать при клике мимо
 document.addEventListener('click', (e) => {
-  if (e.target !== inputField) suggestionsBox.style.display = 'none';
+  if (e.target !== inputField && e.target !== buttonReshetka) suggestionsBox.style.display = 'none';
 });
 
 
