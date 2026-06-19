@@ -1,7 +1,7 @@
   /* Контейнер, где слои лежат друг на друге */
   .editor {
     position: relative;
-    width: 500px;
+    width: 1000px;
     font-family: monospace; /* Важно: буквы одинаковой ширины */
     font-size: 30px;
   }

@@ -112,7 +112,10 @@
     </label><br>
     <div class="editor" id="textarea_div">
         <div id="ghost" class="overlay"></div>
-        <div style="display: flex;"><textarea id="commentField" style="font-size: 30px;" name="comment" rows="5" cols="40"></textarea><button id="buttonReshetka" data-key="#" style="font-size: 30px; height: 50px; width: 50px; margin-top: 30px; margin-left: 10px;">#</button></div>
+        <div style="display: flex; align-items: flex-start;">
+        <textarea id="commentField" style="font-size: 30px; flex-shrink: 0; width: 500px;" name="comment" rows="5" cols="40"></textarea>
+        <button id="buttonReshetka" data-key="#" style="font-size: 30px; height: 50px; width: 50px; margin-top: 30px; margin-left: 10px;">#</button>
+        </div>
         <div id="suggestions"></div>
     </div>
     <p></p>
