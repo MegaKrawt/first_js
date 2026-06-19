@@ -350,6 +350,7 @@ function handleVirtualKey(e) {
 
 
     calculate()
+    localStorage.setItem('auto_save', JSON.stringify(inputField.value))
     
     
 }
@@ -821,11 +822,12 @@ inputField.addEventListener('input', () => {
                 item.className = 'suggestion-item';
                 item.textContent = match;
                 item.onclick = () => {
-                    // 3. При вставке сохраняем всё, что было до этого слова (включая Enter)
-                    const before = value.substring(0, lastSeparatorIndex + 1);
-                    const after = value.substring(cursorIndex);
-                    inputField.value = before + match + after;
-                    suggestionsBox.style.display = 'none';
+                    // // 3. При вставке сохраняем всё, что было до этого слова (включая Enter)
+                    // const before = value.substring(0, lastSeparatorIndex + 1);
+                    // const after = value.substring(cursorIndex);
+                    // inputField.value = before + match + after;
+                    // suggestionsBox.style.display = 'none';
+                    insertAtCursor(inputField, match.replace(currentWord, ""))
                     inputField.focus();
                 };
                 suggestionsBox.appendChild(item);
