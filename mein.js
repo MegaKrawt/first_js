@@ -568,7 +568,7 @@ cal_cod_app.addEventListener("click", ()=>{
 // Функция преобразования в красивую степень 10
 function formatScientific(num, decimals = 2) {
   if (num === 0) return '0';
-  if (num >= 0.00001 && num <= 1000000) {
+  if (num >= 0.00001 && num <= 1000_000_000_000) {
     if (num >= 1000) return Number(num.toFixed(2)).toLocaleString('ru-RU').replace(',', '.');
     if (num >= 100) return Number(num.toFixed(2));
     if (num >= 10) return Number(num.toFixed(2));
@@ -676,7 +676,7 @@ myChart = new Chart(ctx, {
                         if (label) label += ': ';
                         if (context.parsed.y !== null) {
                         // Вызываем нашу красивую функцию
-                        label += formatScientific(context.parsed.y, 2); 
+                        label += formatScientific(context.parsed.y, 9); 
                         }
                         return label;
                     }
