@@ -16,6 +16,319 @@ const name_select = document.querySelector('#name_select');
 const update_cod_app = document.querySelector('#update_cod_app');
 const ghost = document.getElementById('ghost');
 
+// Client ID 319124985995-asdujigq8so3ta3ndkm5cgckrm4rjve4.apps.googleusercontent.com
+
+const CLIENT_ID = '319124985995-asdujigq8so3ta3ndkm5cgckrm4rjve4.apps.googleusercontent.com'; 
+const PROXY_URL = 'https://aaaraboratuyhe.netlify.app/api/token';
+
+let tokenClient;
+let accessToken = null;
+
+// // Элементы интерфейса
+const loginBtn = document.getElementById('loginBtn');
+const statusDiv = document.getElementById('status');
+
+async function handleSuccessfulLogin(token) {
+    accessToken = token;
+    statusDiv.innerText = "Статус: Успешно авторизован!";
+    statusDiv.style.color = "green";
+}
+
+// 1. Инициализация при загрузке страницы
+window.addEventListener('load', async () => {
+    try {
+        // МЕНЯЕМ НА initCodeClient
+        tokenClient = google.accounts.oauth2.initCodeClient({
+            client_id: CLIENT_ID,
+            scope: 'https://www.googleapis.com/auth/drive.appdata',
+            ux_mode: 'popup',
+            callback: async (authResponse) => {
+                if (authResponse.code) {
+                    console.log("Получен код авторизации, обмениваем на токены...");
+                    await exchangeCodeForTokens(authResponse.code);
+                    syncWithCloud('cloud_to_local');
+                }
+            },
+        });
+
+        // АВТО-ВХОД ЧЕРЕЗ REFRESH TOKEN
+        const savedToken = localStorage.getItem('google_access_token');
+        const expiresAt = localStorage.getItem('google_token_expires');
+        const refreshToken = localStorage.getItem('google_refresh_token');
+
+        if (savedToken && expiresAt && Date.now() < (Number(expiresAt) - 300000)) {
+            // Вариант 1: Обычный токен еще жив
+            console.log("Найден живой токен, входим...");
+            await handleSuccessfulLogin(savedToken);
+            await syncWithCloud('cloud_to_local');
+        } else if (refreshToken) {
+            // Вариант 2: Токен сдох, но есть вечный Refresh Token! Обновляем его в фоне
+            console.log("Токен истёк, обновляем через Refresh Token...");
+            statusDiv.innerText = "Обновление сессии...";
+            await refreshAccessToken(refreshToken);
+            await syncWithCloud('cloud_to_local');
+        } else {
+            statusDiv.innerText = "чтобы включить сохранения в облако, нажмите кнопку 'Войти'"
+            statusDiv.style.color = "black";
+        }
+
+    } catch (err) {
+        console.error("Критическая ошибка:", err);
+        statusDiv.innerText = "Ошибка инициализации: " + err.message;
+        statusDiv.style.color = "red";
+    }
+});
+
+// 2. Обработчик кнопки Войти
+loginBtn.addEventListener('click', () => {
+    localStorage.removeItem('google_access_token');
+    localStorage.removeItem('google_token_expires');
+    localStorage.removeItem('google_refresh_token');
+    
+    // Открываем окно выбора аккаунта
+    tokenClient.requestCode();
+});
+
+document.getElementById("outloginBtn").addEventListener('click', () => {
+    localStorage.removeItem('google_access_token');
+    localStorage.removeItem('google_token_expires');
+    localStorage.removeItem('google_refresh_token');
+    localStorage.removeItem('is_sinc');
+
+    alert("вы вышли на данном устройсве.")
+    location.reload(true);
+});
+
+// ОДНА ФУНКЦИЯ ДЛЯ ПОЛНОЙ СИНХРОНИЗАЦИИ
+// direction может быть:
+// 'cloud_to_local' (скачать из облака в браузер) 
+// 'local_to_cloud' (выгрузить из браузера в облако)
+async function syncWithCloud(direction = 'cloud_to_local') {
+    let is_sinc = JSON.parse(localStorage.getItem('is_sinc'))
+    localStorage.setItem('is_sinc', JSON.stringify(false));
+
+    statusDiv.innerText = "Статус: синхронизация ...";
+    statusDiv.style.color = "gray";
+
+    const expiresAt = localStorage.getItem('google_token_expires');
+    const refreshToken = localStorage.getItem('google_refresh_token');
+
+    // Если токен умер в процессе игры (прошел час)
+    if (!expiresAt || Date.now() > (Number(expiresAt) - 60000)) { 
+        if (refreshToken) {
+            console.log("Токен истек во время игры. Обновляем через рефреш...");
+            accessToken = await refreshAccessToken(refreshToken);
+        } else {
+            statusDiv.innerText = "Нужна повторная авторизация.";
+        }
+    }
+    
+    if (!accessToken) {
+        console.error("Пользователь не авторизован в Google!");
+        statusDiv.innerText = "чтобы включить сохранения в облако, нажмите кнопку 'Войти'";
+        statusDiv.style.color = "black";
+        alert("ВАЖНО! сейчас вашы данные сохраняются только в кеш браузера и могут быть случайно очищены!\nЧтобы этого избежать включите сохранения в облако.")
+        return false;
+    }
+
+    // Поменяли имя файла, чтобы он содержал только сохранения
+    const FILE_NAME = 'game_saves_backup.json';
+
+    try {
+        // 1. Ищем файл бэкапа в скрытой папке appDataFolder
+        const searchUrl = `https://www.googleapis.com/drive/v3/files?q=name='${FILE_NAME}' and trashed = false&spaces=appDataFolder`;
+        const searchResponse = await fetch(searchUrl, { headers: { 'Authorization': `Bearer ${accessToken}` } });
+        const searchResult = await searchResponse.json();
+        const fileId = searchResult.files && searchResult.files.length > 0 ? searchResult.files[0].id : null;
+
+        // --- НАПРАВЛЕНИЕ: ИЗ ОБЛАКА В ЛОКАЛ СТОРЕДЖ ---
+        if (direction === 'cloud_to_local') {
+            if (!fileId) {
+                console.log("Бэкап сохранений в облаке не найден. Это первый запуск, оставляем локальные данные.");
+                await syncWithCloud('local_to_cloud');
+                console.log("данные записаны в облако")
+                localStorage.setItem('is_sinc', JSON.stringify(true));
+                return true;
+            }
+
+            // Скачиваем содержимое файла
+            const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+                headers: { 'Authorization': `Bearer ${accessToken}` }
+            });
+            const cloudDataText = await response.text();
+            
+            // В облаке лежит строка, которую мы получили из localStorage.getItem('saves')
+            if (cloudDataText) {
+                if (is_sinc){
+                    localStorage.setItem('saves', cloudDataText); 
+                    console.log("Сохранения успешно загружены из Google Диска в localStorage['saves']!");}
+                else{
+                    let cloudSaves = JSON.parse(cloudDataText)
+                    let localSaves = JSON.parse(localStorage.getItem('saves'))
+                    let mergedSaves = { ...localSaves, ...cloudSaves };
+                    localStorage.setItem('saves', JSON.stringify(mergedSaves));
+                    console.log("Данные из облака и localStorage успешно объединены! и записаны в localStorage");
+
+                    await syncWithCloud('local_to_cloud');
+                    console.log("обедененные данные записаны в облако")
+                }
+
+                
+
+                saves = JSON.parse(localStorage.getItem('saves'))
+                name_select.innerHTML = '\n<option value="">_________</option>'
+                Object.keys(saves).forEach((i) => {
+                    name_select.innerHTML += `\n<option value="${i}">${i}</option>`
+                })
+                
+            }
+            localStorage.setItem('is_sinc', JSON.stringify(true));
+            statusDiv.innerText = "Статус: данные успешно синхронизированы с облаком!";
+            statusDiv.style.color = "green";
+            return true;
+        }
+
+        // --- НАПРАВЛЕНИЕ: ИЗ ЛОКАЛ СТОРЕДЖА В ОБЛАКО ---
+        if (direction === 'local_to_cloud') {
+            const saveData = localStorage.getItem('saves');
+            
+            if (!saveData) {
+                console.warn("В localStorage нет ключа 'saves'. Нечего сохранять в облако.");
+                return false;
+            }
+
+            const boundary = 'foo_bar_baz';
+            const delimiter = `\r\n--${boundary}\r\n`;
+            const close_delim = `\r\n--${boundary}--`;
+
+            // Базовые метаданные (для обоих случаев)
+            const metadata = {
+                name: FILE_NAME,
+                mimeType: 'application/json'
+            };
+
+            let url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+            let method = 'POST';
+
+            if (fileId) {
+                // Если файл ОБНОВЛЯЕТСЯ (PATCH) — parents передавать НЕЛЬЗЯ
+                url = `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`;
+                method = 'PATCH';
+            } else {
+                // Если файл СОЗДАЕТСЯ (POST) — обязательно указываем, куда (в appDataFolder)
+                metadata.parents = ['appDataFolder'];
+            }
+
+            // Собираем тело запроса с правильными метаданными
+            const multipartRequestBody =
+                delimiter +
+                'Content-Type: application/json\r\n\r\n' +
+                JSON.stringify(metadata) +
+                delimiter +
+                'Content-Type: text/plain\r\n\r\n' +
+                saveData + 
+                close_delim;
+
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': `multipart/related; boundary=${boundary}`
+                },
+                body: multipartRequestBody
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("Ошибка сервера Google:", errorData);
+                return false;
+            }
+            
+            await response.json();
+            console.log("Элемент 'saves' успешно синхронизирован с облаком!");
+            localStorage.setItem('is_sinc', JSON.stringify(true));
+            statusDiv.innerText = "Статус: данные успешно синхронизированы с облаком!";
+            statusDiv.style.color = "green";
+            return true;
+        }
+
+    } catch (err) {
+        console.error("Ошибка при синхронизации:", err);
+        return false;
+    }
+}
+
+
+
+
+
+// Функция 1: Обменивает одноразовый код на Access и Refresh токены (вызывается 1 раз при первом входе)
+async function exchangeCodeForTokens(code) {
+    try {
+        statusDiv.innerText = "Обмен кода через безопасный прокси...";
+        
+        const response = await fetch(PROXY_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify({
+                client_id: CLIENT_ID,
+                code: code,
+                grant_type: 'authorization_code',
+                redirect_uri: window.location.origin
+            })
+        });
+
+        const data = await response.json();
+        
+        if (data.access_token) {
+            localStorage.setItem('google_access_token', data.access_token);
+            localStorage.setItem('google_token_expires', Date.now() + (data.expires_in * 1000));
+            
+            // Сохраняем вечный ключ! Он приходит только ОДИН раз при первом входе
+            if (data.refresh_token) {
+                localStorage.setItem('google_refresh_token', data.refresh_token);
+            }
+
+            await handleSuccessfulLogin(data.access_token);
+        } else {
+            console.error("Не удалось получить токены:", data);
+        }
+    } catch (err) {
+        console.error("Ошибка при обмене кода:", err);
+    }
+}
+
+// Функция 2: Берет вечный Refresh Token и молча за 0.3 сек получает новый рабочий Access Token
+async function refreshAccessToken(refreshToken) {
+    try {
+        const response = await fetch(PROXY_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                client_id: CLIENT_ID,
+                refresh_token: refreshToken,
+                grant_type: 'refresh_token'
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.access_token) {
+            localStorage.setItem('google_access_token', data.access_token);
+            localStorage.setItem('google_token_expires', Date.now() + (data.expires_in * 1000));
+            
+            await handleSuccessfulLogin(data.access_token);
+            console.log("Токен успешно обновлен в фоне через Refresh Token!");
+            return data.access_token;
+        } else {
+            console.error("Не удалось обновить токен:", data);
+            statusDiv.innerText = "Сессия устарела. Войдите заново.";
+            statusDiv.style.color = "red";
+        }
+    } catch (err) {
+        console.error("Ошибка при обновлении токена:", err);
+    }
+}
 
 window.addEventListener('load', () => {
     const params = new URLSearchParams(window.location.search);
@@ -35,15 +348,16 @@ window.addEventListener('load', () => {
                 }
             }
         });
-        // 3. Пересчитываем всё с новыми значениями
-        calculate(); 
-        cal_cod_app.click(); // Обновляем вывод в приложении
-        create_grafik()
         
         document.querySelector('#hideResult').checked=0; document.querySelector('#hideResult').click();
         if (codeFromUrl.includes("#input")){
           document.querySelector('#hideInput').checked=0; document.querySelector('#hideInput').click();}
         else{document.querySelector('#hideInput').checked=1; document.querySelector('#hideInput').click();}
+
+        // 3. Пересчитываем всё с новыми значениями
+        calculate(); 
+        cal_cod_app.click(); // Обновляем вывод в приложении
+        create_grafik()
     }
     else{inputField.value = JSON.parse(localStorage.getItem('auto_save'))
         calculate()
@@ -146,7 +460,7 @@ if (setting == null) {
     localStorage.setItem('setting', JSON.stringify(setting))
 }
 
-name_select.innerHTML = '\n<option value=" ">_________</option>'
+name_select.innerHTML = '\n<option value="">_________</option>'
 Object.keys(saves).forEach((i) => {
     console.log(i)
     name_select.innerHTML += `\n<option value="${i}">${i}</option>`
@@ -154,11 +468,13 @@ Object.keys(saves).forEach((i) => {
 
 
 saveButton.addEventListener('click', function(){
+    if (!name_input.value) return
     saves = JSON.parse(localStorage.getItem('saves'))
     saves[name_input.value] = inputField.value
     localStorage.setItem('saves', JSON.stringify(saves))
+    syncWithCloud("local_to_cloud")
 
-    name_select.innerHTML = '\n<option value=" ">_________</option>'
+    name_select.innerHTML = '\n<option value="">_________</option>'
     Object.keys(saves).forEach((i) => {
         console.log(i)
         name_select.innerHTML += `\n<option value="${i}">${i}</option>`
@@ -185,8 +501,9 @@ del_btn.addEventListener('click', function(){
         saves = JSON.parse(localStorage.getItem('saves'))
         delete saves[name_input.value]
         localStorage.setItem('saves', JSON.stringify(saves))
+        syncWithCloud("local_to_cloud")
 
-        name_select.innerHTML = '\n<option value=" "> </option>'
+        name_select.innerHTML = '\n<option value="">_________</option>'
         Object.keys(saves).forEach((i) => {
             console.log(i)
             name_select.innerHTML += `\n<option value="${i}">${i}</option>`

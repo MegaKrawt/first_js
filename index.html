@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>illya_html</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 
     <style>
         /* Стиль для главного контейнера клавиатуры */
@@ -77,6 +78,9 @@
     <link rel="stylesheet" href="style_textarea.css">
   </head>
   <body>
+    <button id="loginBtn" style="font-size: 20px; background-color: #99ff99;">Войти</button>
+    <button id="outloginBtn" style="font-size: 20px; background-color: #ff9999;">Выйти</button>
+    <div id="status" style="color: gray; font-size: 20px;">Статус: Ожидание инициализации...</div>
     <input type="text" id = 'name_input' placeholder="name of save" style="font-size: 30px;">
     <br>
     <div class="button-container" style="display: flex; flex-wrap: nowrap;">
@@ -169,7 +173,7 @@
     <div id="cod_app_in"></div>
     <div id="cod_app_out"></div>
 
-    <canvas id="myChart" width="400" height="200"></canvas><br>
+    <canvas id="myChart" width="600" height="300"></canvas><br>
     <label style="font-size: 30px; cursor: pointer;">
       <input type="checkbox" id="beginAtZeroY" style="transform: scale(2); width: 20px;"> 
       всегда показывать y=0</label><p></p>
