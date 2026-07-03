@@ -478,12 +478,13 @@ Object.keys(saves).forEach((i) => {
 })
 
 
-saveButton.addEventListener('click', function(){
+saveButton.addEventListener('click', async function(){
     if (!name_input.value) return
+    await syncWithCloud("cloud_to_local")
     saves = JSON.parse(localStorage.getItem('saves'))
     saves[name_input.value] = inputField.value
     localStorage.setItem('saves', JSON.stringify(saves))
-    syncWithCloud("local_to_cloud")
+    await syncWithCloud("local_to_cloud")
 
     name_select.innerHTML = '\n<option value="">_________</option>'
     Object.keys(saves).forEach((i) => {
@@ -507,12 +508,13 @@ name_select.addEventListener('change', function(){
     update_cod_app.click()
 })
 
-del_btn.addEventListener('click', function(){
+del_btn.addEventListener('click', async function(){
     if (confirm('вы точно хотите удалить сохранение ' + name_input.value + ' ?')){
+        await syncWithCloud("cloud_to_local")
         saves = JSON.parse(localStorage.getItem('saves'))
         delete saves[name_input.value]
         localStorage.setItem('saves', JSON.stringify(saves))
-        syncWithCloud("local_to_cloud")
+        await syncWithCloud("local_to_cloud")
 
         name_select.innerHTML = '\n<option value="">_________</option>'
         Object.keys(saves).forEach((i) => {
