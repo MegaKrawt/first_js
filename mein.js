@@ -103,6 +103,7 @@ document.getElementById("outloginBtn").addEventListener('click', () => {
 // direction может быть:
 // 'cloud_to_local' (скачать из облака в браузер) 
 // 'local_to_cloud' (выгрузить из браузера в облако)
+let user_know_cloud = false
 async function syncWithCloud(direction = 'cloud_to_local') {
     let is_sinc = JSON.parse(localStorage.getItem('is_sinc'))
     localStorage.setItem('is_sinc', JSON.stringify(false));
@@ -112,6 +113,15 @@ async function syncWithCloud(direction = 'cloud_to_local') {
 
     const expiresAt = localStorage.getItem('google_token_expires');
     const refreshToken = localStorage.getItem('google_refresh_token');
+
+    if (!refreshToken) {
+        console.error("refreshToken отсутствует");
+        statusDiv.innerText = "чтобы включить сохранения в облако, нажмите кнопку 'Войти'";
+        statusDiv.style.color = "black";
+        if (!user_know_cloud) alert("ВАЖНО! сейчас вашы данные сохраняются только в кеш браузера и могут быть случайно очищены!\nЧтобы этого избежать включите сохранения в облако.")
+        user_know_cloud = true
+        return false;
+    }
 
     // Если токен умер в процессе игры (прошел час)
     if (!expiresAt || Date.now() > (Number(expiresAt) - 60000)) { 
@@ -124,10 +134,9 @@ async function syncWithCloud(direction = 'cloud_to_local') {
     }
     
     if (!accessToken) {
-        console.error("Пользователь не авторизован в Google!");
-        statusDiv.innerText = "чтобы включить сохранения в облако, нажмите кнопку 'Войти'";
-        statusDiv.style.color = "black";
-        alert("ВАЖНО! сейчас вашы данные сохраняются только в кеш браузера и могут быть случайно очищены!\nЧтобы этого избежать включите сохранения в облако.")
+        console.error("accessToken отсутствует");
+        statusDiv.innerText = "Ошибка синхронизации. Проверьте интернет-соеденение";
+        statusDiv.style.color = "red";
         return false;
     }
 
@@ -254,6 +263,8 @@ async function syncWithCloud(direction = 'cloud_to_local') {
 
     } catch (err) {
         console.error("Ошибка при синхронизации:", err);
+        statusDiv.innerText = "Ошибка синхронизации. Проверьте интернет-соеденение";
+        statusDiv.style.color = "red";
         return false;
     }
 }
