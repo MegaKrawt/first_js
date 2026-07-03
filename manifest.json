@@ -1,0 +1,21 @@
+{
+  "short_name": "multy calc",
+  "name": "megakrawt calculator",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#ffffff",
+  "theme_color": "#40dcff",
+  "display": "standalone",
+  "orientation": "portrait"
+}
