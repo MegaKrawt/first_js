@@ -17,6 +17,5 @@
   "scope": "/first_js/",
   "background_color": "#ffffff",
   "theme_color": "#40dcff",
-  "display": "standalone",
-  "orientation": "portrait"
+  "display": "standalone"
 }
