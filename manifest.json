@@ -13,7 +13,8 @@
       "sizes": "512x512"
     }
   ],
-  "start_url": "https://megakrawt.github.io/first_js/",
+  "start_url": "/first_js/",
+  "scope": "/first_js/",
   "background_color": "#ffffff",
   "theme_color": "#40dcff",
   "display": "standalone",
