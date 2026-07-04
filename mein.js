@@ -506,6 +506,7 @@ name_select.addEventListener('change', function(){
 
     calculate(true)
     update_cod_app.click()
+    create_grafik()
 })
 
 del_btn.addEventListener('click', async function(){
