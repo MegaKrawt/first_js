@@ -147,6 +147,8 @@ async function syncWithCloud(direction = 'cloud_to_local') {
         // 1. Ищем файл бэкапа в скрытой папке appDataFolder
         const searchUrl = `https://www.googleapis.com/drive/v3/files?q=name='${FILE_NAME}' and trashed = false&spaces=appDataFolder`;
         const searchResponse = await fetch(searchUrl, { headers: { 'Authorization': `Bearer ${accessToken}` } });
+        
+        if (!searchResponse.ok) throw new Error("Ошибка при поиске файла в Google Drive");
         const searchResult = await searchResponse.json();
         const fileId = searchResult.files && searchResult.files.length > 0 ? searchResult.files[0].id : null;
 
@@ -154,42 +156,62 @@ async function syncWithCloud(direction = 'cloud_to_local') {
         if (direction === 'cloud_to_local') {
             if (!fileId) {
                 console.log("Бэкап сохранений в облаке не найден. Это первый запуск, оставляем локальные данные.");
-                await syncWithCloud('local_to_cloud');
-                console.log("данные записаны в облако")
-                localStorage.setItem('is_sinc', JSON.stringify(true));
-                return true;
+                const success = await syncWithCloud('local_to_cloud');
+                if (success) localStorage.setItem('is_sinc', JSON.stringify(true));
+                return success;
             }
 
             // Скачиваем содержимое файла
             const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
                 headers: { 'Authorization': `Bearer ${accessToken}` }
             });
+            if (!response.ok) throw new Error("Ошибка при скачивании файла из Google Drive");
             const cloudDataText = await response.text();
             
             // В облаке лежит строка, которую мы получили из localStorage.getItem('saves')
             if (cloudDataText) {
+                let cloudSaves = JSON.parse(cloudDataText);
+                let localSaves = JSON.parse(localStorage.getItem('saves')) || {};
+                
                 if (is_sinc){
+                    // Если флаг синхронизации активен, облако имеет безусловный приоритет
                     localStorage.setItem('saves', cloudDataText); 
-                    console.log("Сохранения успешно загружены из Google Диска в localStorage['saves']!");}
-                else{
-                    let cloudSaves = JSON.parse(cloudDataText)
-                    let localSaves = JSON.parse(localStorage.getItem('saves'))
-                    let mergedSaves = { ...localSaves, ...cloudSaves };
-                    localStorage.setItem('saves', JSON.stringify(mergedSaves));
-                    console.log("Данные из облака и localStorage успешно объединены! и записаны в localStorage");
+                    console.log("Сохранения успешно загружены из Google Диска в localStorage['saves']!");
+                } else {
+                    // Разрешение конфликтов на основе временных меток (Timestamps)
+                    let mergedSaves = {};
+                    
+                    // Собираем все уникальные ключи из локального хранилища и облака
+                    const allKeys = new Set([...Object.keys(localSaves), ...Object.keys(cloudSaves)]);
+                    
+                    allKeys.forEach(key => {
+                        const localItem = localSaves[key];
+                        const cloudItem = cloudSaves[key];
+                        
+                        // Если ключ есть везде, сравниваем updatedAt
+                        if (localItem && cloudItem) {
+                            const localTime = localItem.updatedAt || 0;
+                            const cloudTime = cloudItem.updatedAt || 0;
+                            mergedSaves[key] = localTime >= cloudTime ? localItem : cloudItem;
+                        } else {
+                            // Если есть только в одном месте — берем то, что есть
+                            mergedSaves[key] = localItem || cloudItem;
+                        }
+                    });
 
-                    await syncWithCloud('local_to_cloud');
+                    localStorage.setItem('saves', JSON.stringify(mergedSaves));
+                    console.log("Данные из облака и localStorage успешно объединены на основе меток времени!");
+
+                    const success = await syncWithCloud('local_to_cloud');
+                    if (!success) return false; // Прерываемся, если отправка не удалась из-за интернета
                     console.log("обедененные данные записаны в облако")
                 }
 
-                
-
-                saves = JSON.parse(localStorage.getItem('saves'))
+                saves = JSON.parse(localStorage.getItem('saves')) || {}
                 name_select.innerHTML = '\n<option value="">_________</option>'
                 Object.keys(saves).forEach((i) => {
-                    name_select.innerHTML += `\n<option value="${i}">${i}</option>`
+                        name_select.innerHTML += `\n<option value="${i}">${i}</option>`
                 })
-                
             }
             localStorage.setItem('is_sinc', JSON.stringify(true));
             statusDiv.innerText = "Статус: данные успешно синхронизированы с облаком!";
@@ -480,29 +502,39 @@ Object.keys(saves).forEach((i) => {
 
 saveButton.addEventListener('click', async function(){
     if (!name_input.value) return
-    await syncWithCloud("cloud_to_local")
-    saves = JSON.parse(localStorage.getItem('saves'))
-    saves[name_input.value] = inputField.value
+    saveButton.disabled = true
+    if (await syncWithCloud("cloud_to_local")){    
+        saves = JSON.parse(localStorage.getItem('saves')) || {}
+            saves[name_input.value] = {
+            data: inputField.value,
+            updatedAt: Date.now()
+        }
+        localStorage.setItem('saves', JSON.stringify(saves))
+        await syncWithCloud("local_to_cloud")
+    } else{
+        saves = JSON.parse(localStorage.getItem('saves')) || {}
+        saves[name_input.value] = {
+        data: inputField.value,
+        updatedAt: Date.now()
+    }
     localStorage.setItem('saves', JSON.stringify(saves))
-    await syncWithCloud("local_to_cloud")
+    }
 
     name_select.innerHTML = '\n<option value="">_________</option>'
     Object.keys(saves).forEach((i) => {
         console.log(i)
         name_select.innerHTML += `\n<option value="${i}">${i}</option>`
     })
-})
-
-load_btn.addEventListener('click', function(){
-    saves = JSON.parse(localStorage.getItem('saves'))
-    inputField.value = saves[name_input.value]
+    saveButton.disabled = false
 })
 
 name_select.addEventListener('change', function(){
     name_input.value = name_select.value
 
-    saves = JSON.parse(localStorage.getItem('saves'))
-    inputField.value = saves[name_input.value]
+    saves = JSON.parse(localStorage.getItem('saves')) || {}
+    // Извлекаем строку данных из объекта с временной меткой
+    const currentSave = saves[name_input.value];
+    inputField.value = currentSave && typeof currentSave === 'object' ? currentSave.data : currentSave;
 
     calculate(true)
     update_cod_app.click()
@@ -511,19 +543,26 @@ name_select.addEventListener('change', function(){
 
 del_btn.addEventListener('click', async function(){
     if (confirm('вы точно хотите удалить сохранение ' + name_input.value + ' ?')){
-        await syncWithCloud("cloud_to_local")
-        saves = JSON.parse(localStorage.getItem('saves'))
-        delete saves[name_input.value]
-        localStorage.setItem('saves', JSON.stringify(saves))
-        await syncWithCloud("local_to_cloud")
+        del_btn.disabled = true
+        try {
+            if (await syncWithCloud("cloud_to_local")){
+                saves = JSON.parse(localStorage.getItem('saves')) || {}
+                delete saves[name_input.value]
+                localStorage.setItem('saves', JSON.stringify(saves))
+                await syncWithCloud("local_to_cloud")
+            } else {
+                saves = JSON.parse(localStorage.getItem('saves')) || {}
+                delete saves[name_input.value]
+                localStorage.setItem('saves', JSON.stringify(saves))}}
+        catch {alert('что-то пошло не так\nили сохранение не найдено')}
 
         name_select.innerHTML = '\n<option value="">_________</option>'
         Object.keys(saves).forEach((i) => {
             console.log(i)
             name_select.innerHTML += `\n<option value="${i}">${i}</option>`
         })
+        del_btn.disabled = false
     }
-
 })
 
 
