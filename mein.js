@@ -773,6 +773,9 @@ let grafikstart = -10
 let grafikstop = 10
 let grafikstep = 0.1
 
+let appForIn = []
+let old_appForIn = []
+
 function calculate(print_error = false, updeteUI=true){
     scope = {}
     app_arr_out={}
@@ -782,7 +785,7 @@ function calculate(print_error = false, updeteUI=true){
     outygrafik=[]
     
     try {
-        appForIn = []
+        if (updeteUI) appForIn = []
         for (const s of processText()) {
             if (s == ''){ghostContent += `<span></span>\n`; continue}
             let isError = false
@@ -862,7 +865,14 @@ function calculate(print_error = false, updeteUI=true){
 let scope = {};
 const targetDiv = document.getElementById('velues_names')
 button.addEventListener('click', ()=>{calculate(true)});
-inputField.addEventListener('input', ()=>{calculate(false); localStorage.setItem('auto_save', JSON.stringify(inputField.value))});
+inputField.addEventListener('input', ()=>{
+    old_appForIn = appForIn
+    calculate(false);
+    localStorage.setItem('auto_save', JSON.stringify(inputField.value))
+
+    if (JSON.stringify(appForIn) !== JSON.stringify(old_appForIn)) {update_cod_app.click()}
+    cal_cod_app.click()
+});
 
 
 
