@@ -363,10 +363,19 @@ async function refreshAccessToken(refreshToken) {
     }
 }
 
+document.getElementById("viewModeBtn").addEventListener("click", () => {
+    document.getElementById("viewMode").style.display = "block"
+    document.getElementById("viewModeBtn").style.display = 'none'; 
+})
 window.addEventListener('load', () => {
     const params = new URLSearchParams(window.location.search);
     const codeFromUrl = params.get('code');
     if (codeFromUrl) {
+        if (params.has("viewMode")) {
+            document.getElementById("viewMode").style.display = "none"
+            document.getElementById("viewModeBtn").style.display = 'block'; 
+        }
+
         inputField.value = codeFromUrl;
         // 1. Сначала генерируем интерфейс (App Mode)
         update_cod_app.click(); 
@@ -410,6 +419,7 @@ function generateShareLink() {
             shareUrl += `&v_${encodeURIComponent(name)}=${encodeURIComponent(val)}`;
         }
     }
+    if (code.includes("#output")) shareUrl += "&viewMode"
     navigator.clipboard.writeText(shareUrl);
     alert("Ссылка с данными скопирована!");
 }
@@ -636,6 +646,7 @@ document.querySelectorAll('input[type="checkbox"]').forEach(chk => {
 
 // Запускаем при загрузке страницы
 loadInterfaceSettings();
+document.querySelector('#hideResult').checked=0; document.querySelector('#hideResult').click();
 
 
 
