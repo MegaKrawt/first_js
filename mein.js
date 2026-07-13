@@ -419,7 +419,7 @@ function generateShareLink() {
             shareUrl += `&v_${encodeURIComponent(name)}=${encodeURIComponent(val)}`;
         }
     }
-    if (code.includes("#output")) shareUrl += "&viewMode"
+    if (code.includes("#input")) shareUrl += "&viewMode"
     navigator.clipboard.writeText(shareUrl);
     alert("Ссылка с данными скопирована!");
 }
