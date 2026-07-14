@@ -390,11 +390,6 @@ window.addEventListener('load', () => {
                 }
             }
         });
-        
-        document.querySelector('#hideResult').checked=0; document.querySelector('#hideResult').click();
-        if (codeFromUrl.includes("#input")){
-          document.querySelector('#hideInput').checked=0; document.querySelector('#hideInput').click();}
-        else{document.querySelector('#hideInput').checked=1; document.querySelector('#hideInput').click();}
 
         // 3. Пересчитываем всё с новыми значениями
         calculate(); 
