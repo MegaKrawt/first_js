@@ -371,7 +371,7 @@ window.addEventListener('load', () => {
     const params = new URLSearchParams(window.location.search);
     const codeFromUrl = params.get('code');
     if (codeFromUrl) {
-        if (code.includes("#input")) {
+        if (codeFromUrl.includes("#input")) {
             document.getElementById("viewMode").style.display = "none"
             document.getElementById("viewModeBtn").style.display = 'block'; 
         }
