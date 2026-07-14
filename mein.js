@@ -371,7 +371,7 @@ window.addEventListener('load', () => {
     const params = new URLSearchParams(window.location.search);
     const codeFromUrl = params.get('code');
     if (codeFromUrl) {
-        if (params.has("viewMode")) {
+        if (code.includes("#input")) {
             document.getElementById("viewMode").style.display = "none"
             document.getElementById("viewModeBtn").style.display = 'block'; 
         }
@@ -419,7 +419,7 @@ function generateShareLink() {
             shareUrl += `&v_${encodeURIComponent(name)}=${encodeURIComponent(val)}`;
         }
     }
-    if (code.includes("#input")) shareUrl += "&viewMode"
+    // if (code.includes("#input")) shareUrl += "&viewMode"
     navigator.clipboard.writeText(shareUrl);
     alert("Ссылка с данными скопирована!");
 }
