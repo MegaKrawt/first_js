@@ -5,7 +5,16 @@
     <meta name="viewport" content="width=700, maximum-scale=1.0">
     <title>multy_calc</title>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <link rel="manifest" href="manifest.json">
+    <link id="my-manifest" rel="manifest" href="manifest.json">
+    <script>
+    // Если в URL есть параметры (знак "?")
+    if (window.location.search) {
+      const manifest = document.getElementById('my-manifest');
+      if (manifest) {
+        manifest.remove(); // Просто удаляем его, и Chrome не будет резать URL!
+      }
+    }
+  </script>
 
     <style>
         /* Стиль для главного контейнера клавиатуры */
