@@ -953,10 +953,11 @@ cal_cod_app.addEventListener("click", ()=>{
 
 // Функция преобразования в красивую степень 10
 function formatScientific(num, decimals = 2) {
+  num_abs = Math.abs(num)
   if (num === 0) return '0';
-  if (num >= 0.00001 && num <= 1000_000_000_000) {
-    if (num >= 1000) return Number(num.toFixed(3)).toLocaleString('ru-RU').replace(',', '.');
-    if (num >= 1) return Number(num.toFixed(6));
+  if (num_abs >= 0.00001 && num_abs <= 1000_000_000_000) {
+    if (num_abs >= 1000) return Number(num.toFixed(3)).toLocaleString('ru-RU').replace(',', '.');
+    if (num_abs >= 1) return Number(num.toFixed(6));
     return Number(num.toFixed(9));
   }
 
