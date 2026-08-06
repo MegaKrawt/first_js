@@ -940,7 +940,7 @@ cal_cod_app.addEventListener("click", ()=>{
     
     s_out=""
     for (const key in app_arr_out){
-      s_out += key + " = " + app_arr_out[key] + "<br>"
+      if (app_arr_out[key] != "error") s_out += key + " = " + app_arr_out[key] + "<br>"
     }
     newElement = document.createElement('p')
     newElement.innerHTML = s_out
