@@ -399,8 +399,7 @@ window.addEventListener('load', () => {
     else{inputField.value = JSON.parse(localStorage.getItem('auto_save'))
         calculate()
         update_cod_app.click()
-        cal_cod_app.click()
-        create_grafik()}
+        cal_cod_app.click()}
 });
 
 function generateShareLink() {
@@ -543,7 +542,6 @@ name_select.addEventListener('change', function(){
 
     calculate(true)
     update_cod_app.click()
-    create_grafik()
 })
 
 del_btn.addEventListener('click', async function(){
