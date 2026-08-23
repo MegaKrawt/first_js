@@ -829,7 +829,7 @@ function calculate(print_error = false, updeteUI=true){
             else{
                 try{
                     resultText = ` = ${math.evaluate(s, scope)}`
-                }catch{scope[s.split('=')[0].replaceAll(" ", "")]='error'; isError = true}
+                }catch{scope[isError = true}
             }}catch{isError = true}
             if(updeteUI){
                 if (isError) {
