@@ -1001,6 +1001,7 @@ let x_arr = []
 let y_arr = []
 let names_grafik = []
 document.getElementById('beginAtZeroY').addEventListener('change', function(){create_grafik()})
+document.getElementById('hide_graf_points').addEventListener('change', function(){create_grafik()})
 function create_grafik(){
 names_grafik = []
 x_arr = []
@@ -1039,7 +1040,8 @@ const ctx = document.getElementById('myChart').getContext('2d');
 
 Chart.defaults.font.size = 20;
 Chart.defaults.elements.line.borderWidth = 6;
-Chart.defaults.elements.point.radius = 8;
+if (document.getElementById('hide_graf_points').checked) Chart.defaults.elements.point.radius = 0;
+else Chart.defaults.elements.point.radius = 8;
 Chart.defaults.elements.point.hoverRadius = 12; 
 
 myChart = new Chart(ctx, {
