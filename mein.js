@@ -15,6 +15,9 @@ const name_input = document.querySelector('#name_input');
 const name_select = document.querySelector('#name_select');
 const update_cod_app = document.querySelector('#update_cod_app');
 const ghost = document.getElementById('ghost');
+const checkbox_input_for_grafik = document.getElementById('checkbox_input_for_grafik');
+const grafik_of_input = document.getElementById('grafik_of_input');
+const select_input_for_grafik = document.getElementById('select_input_for_grafik');
 
 // Client ID 319124985995-asdujigq8so3ta3ndkm5cgckrm4rjve4.apps.googleusercontent.com
 
@@ -771,7 +774,7 @@ let app_arr_in={}
 let app_arr_out={}
 
 let inxgrafik = 0
-let outygrafik = 0
+let outygrafik = []
 
 let grafikstart = -10
 let grafikstop = 10
@@ -891,6 +894,8 @@ update_cod_app.addEventListener("click", ()=>{
     cod_app_in.innerHTML = ''
     cod_app_out.innerHTML = ''
     app_arr_in = {}
+
+    select_input_for_grafik.innerHTML = ""
     
     appForIn.forEach((i)=>{
     console.log(i)
@@ -918,6 +923,8 @@ update_cod_app.addEventListener("click", ()=>{
         input.addEventListener("updRes", (e)=>{text2.textContent = " = " + input.value})
     }
     cod_app_in.appendChild(document.createElement("br"));
+
+    select_input_for_grafik.innerHTML += `\n<option value="${i[0]}">${i[0]}</option>`
     })
     
     calculate()
@@ -1008,13 +1015,33 @@ grafikstart = -10
 grafikstop = 10
 grafikstep = 0.1
 calculate()
+grafikstart = document.getElementById('grafikstart').value || grafikstart
+grafikstop = document.getElementById('grafikstop').value || grafikstop
+grafikstep = document.getElementById('grafikstep').value || grafikstep
+
+if (checkbox_input_for_grafik.checked){
+    for (const key in app_arr_out){
+      names_grafik.push([key, undefined])
+    }
+  }
+console.log(names_grafik)
 if (grafikstep == 0){grafikstep = (grafikstop - grafikstart)/500}
 for (let x = Number(grafikstart); x < Number(grafikstop)+Number(grafikstep); x+=parseFloat(grafikstep)) {
   x=math.round(x, 10)
   inxgrafik = x
+  if (checkbox_input_for_grafik.checked){
+    app_arr_in[select_input_for_grafik.value].value = x
+  }
   calculate(false, false)
   x_arr.push(x)
-  y_arr.push(outygrafik)}
+  if (checkbox_input_for_grafik.checked){
+    outygrafik = []
+    for (const key in app_arr_out){
+      outygrafik.push(app_arr_out[key])
+    }
+  }
+  y_arr.push(outygrafik)
+}
 
 console.log(x_arr)
 console.log(y_arr)
